@@ -1,190 +1,1391 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎮 Frequency Game – Balance the Grid</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to bottom, #f0f8ff, #e6f7ff);
-      color: #222;
-      padding: 20px;
-      margin: 0;
-    }
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      color: #004466;
-    }
-    .container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: bold;
-    }
-    input[type=range] {
-      width: 100%;
-    }
-    .frequency {
-      font-size: 2em;
-      text-align: center;
-      margin-top: 10px;
-      color: #0077cc;
-    }
-    #message {
-      margin-top: 15px;
-      font-weight: bold;
-      color: darkred;
-    }
-    #event-log {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      font-size: 0.9em;
-      background: #fafafa;
-    }
-    .icon-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-around;
-      margin-top: 20px;
-    }
-    .icon-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 0.85em;
-    }
-    .icon-item img {
-      width: 40px;
-      height: 40px;
-      margin-bottom: 5px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Frequency Game — WiseWatt</title>
+<meta name="description" content="Play a control room engineer at the RLDC. Keep India's 50 Hz grid balanced through unit trips, cloud transients and rising RE penetration. Physics-based." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+
+<style>
+:root{
+  --bg:#0B0D10; --bg-soft:#11141A; --surface:#161A21;
+  --line:#262C36; --line-soft:#1C2129;
+  --ink:#F2EBD9; --ink-mute:#9A9485; --ink-dim:#5F5B52;
+  --ember:#E0A458; --ember-hot:#F2B968;
+  --electric:#6BCEEB; --grid:#5DAE7B; --red:#D86B5C;
+  --font-display:'Fraunces',ui-serif,Georgia,serif;
+  --font-sans:'Geist',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --maxw:1280px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+body.light{
+  --bg:#F2EBD9;--bg-soft:#EDE4CD;--surface:#E6DCC1;
+  --line:#C9BFA4;--line-soft:#D7CDB2;
+  --ink:#1A1814;--ink-mute:#5C574B;--ink-dim:#8A8472;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-sans);background:var(--bg);color:var(--ink);
+  font-feature-settings:"ss01","cv11";line-height:1.5;
+  overflow-x:hidden;
+  transition:background .5s var(--ease),color .5s var(--ease);
+}
+a{color:inherit;text-decoration:none}
+svg{display:block;max-width:100%}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:color-mix(in oklab,var(--bg) 70%,transparent);
+  border-bottom:1px solid transparent;transition:border-color .3s;}
+.nav.scrolled{border-bottom-color:var(--line-soft)}
+.nav-inner{max-width:var(--maxw);margin:0 auto;padding:.9rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1.5rem;}
+.brand{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);
+  font-weight:500;font-size:1.3rem;letter-spacing:-.01em;}
+.brand-mark{width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#F2B968,#E0A458,#C4823F);
+  box-shadow:0 0 0 1px var(--line),0 0 24px -2px var(--ember);position:relative;}
+.brand-mark::after{content:"";position:absolute;inset:6px;border-radius:50%;
+  background:var(--bg);box-shadow:inset 0 0 0 2px var(--ember);}
+.brand em{font-style:italic;font-weight:400;color:var(--ink-mute)}
+.nav-back{display:inline-flex;align-items:center;gap:.4rem;
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-mute);}
+.nav-back:hover{color:var(--ember)}
+.theme-btn{background:none;border:1px solid var(--line);color:var(--ink);
+  width:34px;height:34px;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;transition:all .2s;}
+.theme-btn:hover{border-color:var(--ember);color:var(--ember)}
+
+/* HERO */
+.hero{padding:7rem 1.5rem 1.5rem;max-width:var(--maxw);margin:0 auto;position:relative;}
+.hero-grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);
+  background-size:80px 80px;
+  mask-image:radial-gradient(ellipse 70% 50% at 30% 30%,#000 20%,transparent 70%);
+  -webkit-mask-image:radial-gradient(ellipse 70% 50% at 30% 30%,#000 20%,transparent 70%);
+  opacity:.4;pointer-events:none;}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--ember);margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:.8rem;}
+.eyebrow::before{content:"";width:24px;height:1px;background:currentColor}
+h1.display{font-family:var(--font-display);
+  font-variation-settings:"opsz" 144;font-weight:350;
+  font-size:clamp(2.2rem,5.5vw,4.5rem);line-height:1;letter-spacing:-.03em;
+  max-width:16ch;margin-bottom:1.2rem;}
+h1.display em{font-style:italic;color:var(--ember);font-weight:300;}
+.lede{font-size:clamp(0.98rem,1.2vw,1.1rem);color:var(--ink-mute);
+  max-width:70ch;line-height:1.55;margin-bottom:1.5rem;}
+.lede strong{color:var(--ink);font-weight:500}
+
+/* SCENARIO PICKER */
+.scenarios{max-width:var(--maxw);margin:0 auto 1.5rem;padding:0 1.5rem;}
+.scenario-row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;}
+.scen-lbl{font-family:var(--font-mono);font-size:.68rem;color:var(--ink-dim);
+  letter-spacing:.2em;text-transform:uppercase;margin-right:.5rem;}
+.scen-btn{
+  padding:.65rem 1rem;border:1px solid var(--line);border-radius:100px;
+  background:transparent;color:var(--ink);cursor:pointer;
+  font-family:var(--font-sans);font-size:.85rem;font-weight:500;
+  display:inline-flex;align-items:center;gap:.5rem;transition:all .2s;
+}
+.scen-btn:hover{border-color:var(--ember);color:var(--ember)}
+.scen-btn.active{background:var(--ember);color:var(--bg);border-color:var(--ember);}
+.scen-btn small{font-family:var(--font-mono);font-size:.65rem;opacity:.7;letter-spacing:.05em;}
+.scen-controls{margin-left:auto;display:flex;gap:.5rem;}
+.ctrl-btn{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+  background:transparent;color:var(--ink);cursor:pointer;
+  display:grid;place-items:center;transition:all .2s;
+}
+.ctrl-btn:hover{border-color:var(--electric);color:var(--electric);}
+.ctrl-btn.play{width:auto;padding:0 1rem;border-radius:100px;font-size:.8rem;gap:.4rem;
+  display:inline-flex;align-items:center;font-family:var(--font-sans);font-weight:500;}
+.ctrl-btn.play.running{background:var(--red);color:var(--bg);border-color:var(--red);}
+
+/* GAME MAIN */
+.game{max-width:var(--maxw);margin:0 auto;padding:0 1.5rem 4rem;}
+
+/* TOP ROW: DIAL + CHART + STATE */
+.game-top{
+  display:grid;grid-template-columns:340px 1fr 260px;gap:1rem;
+  margin-bottom:1rem;
+}
+@media (max-width:1100px){.game-top{grid-template-columns:1fr 260px;}
+  .dial-panel{grid-column:span 2}}
+@media (max-width:800px){.game-top{grid-template-columns:1fr}
+  .dial-panel{grid-column:auto}}
+
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--bg-soft);padding:1.2rem;}
+.panel-title{
+  font-family:var(--font-mono);font-size:.7rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ember);margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.6rem;justify-content:space-between;
+}
+.panel-title::before{content:"";width:16px;height:1px;background:currentColor;flex-shrink:0}
+.panel-title > span{display:flex;align-items:center;gap:.6rem;}
+.panel-title small{font-family:var(--font-mono);font-size:.65rem;color:var(--ink-dim);
+  letter-spacing:.1em;font-weight:normal;}
+
+/* ANALOG DIAL */
+.dial-panel{padding:1rem;}
+.dial-wrap{position:relative;width:100%;aspect-ratio:1.4;max-width:400px;margin:0 auto;}
+.dial-svg{width:100%;height:100%;}
+.dial-readout{
+  position:absolute;left:50%;bottom:14%;transform:translateX(-50%);
+  text-align:center;pointer-events:none;
+}
+.dial-hz{
+  font-family:var(--font-display);font-variation-settings:"opsz" 144;
+  font-weight:400;font-size:2.4rem;line-height:1;letter-spacing:-.03em;
+  color:var(--ink);
+}
+.dial-hz.warn{color:var(--ember)}
+.dial-hz.bad{color:var(--red)}
+.dial-hz.good{color:var(--grid)}
+.dial-unit{font-family:var(--font-mono);font-size:.72rem;
+  letter-spacing:.15em;color:var(--ink-dim);margin-top:.2rem;}
+.dial-rocof{
+  font-family:var(--font-mono);font-size:.75rem;
+  color:var(--ink-mute);margin-top:.3rem;letter-spacing:.02em;
+}
+.dial-rocof b{color:var(--electric)}
+
+/* FREQUENCY CHART */
+.chart-panel{display:flex;flex-direction:column;min-height:280px;}
+.chart-svg{width:100%;flex:1;min-height:220px;}
+.ch-axis{stroke:var(--line-soft);stroke-width:1;}
+.ch-axis-lbl{font-family:var(--font-mono);font-size:9px;
+  fill:var(--ink-dim);letter-spacing:.05em;}
+.ch-band{fill:color-mix(in oklab,var(--grid) 8%,transparent);}
+.ch-limit{stroke-width:1;stroke-dasharray:3 3;opacity:.5;}
+.ch-limit.nom{stroke:var(--grid);stroke-dasharray:none;opacity:.4;}
+.ch-limit.stat{stroke:var(--ember);}
+.ch-limit.trip{stroke:var(--red);}
+.ch-line{fill:none;stroke:var(--ember);stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;}
+.ch-tag{font-family:var(--font-mono);font-size:9px;
+  fill:var(--ink-dim);letter-spacing:.1em;}
+
+/* STATE BOX */
+.state-panel{display:flex;flex-direction:column;}
+.state-list{display:flex;flex-direction:column;gap:.7rem;flex:1;}
+.state-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding-bottom:.6rem;border-bottom:1px solid var(--line-soft);}
+.state-row:last-child{border-bottom:0}
+.state-label{font-family:var(--font-mono);font-size:.68rem;
+  color:var(--ink-dim);letter-spacing:.1em;text-transform:uppercase;}
+.state-value{font-family:var(--font-mono);font-size:.95rem;
+  color:var(--ink);font-weight:500;letter-spacing:-.01em;}
+.state-value.em{color:var(--ember)}
+.state-value.el{color:var(--electric)}
+.state-value.gr{color:var(--grid)}
+.state-value.bd{color:var(--red)}
+.state-value small{color:var(--ink-dim);font-size:.8em;margin-left:.2em;}
+
+/* ROLES GRID */
+.roles{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-bottom:1rem;
+}
+@media (max-width:900px){.roles{grid-template-columns:1fr}}
+
+.role-panel{position:relative;overflow:hidden;}
+.role-panel::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 100% 0%,color-mix(in oklab,var(--role) 12%,transparent),transparent 60%);
+  pointer-events:none;
+}
+.role-panel[data-role="rldc"]{--role:var(--ember);}
+.role-panel[data-role="coal"]{--role:var(--red);}
+.role-panel[data-role="bess"]{--role:var(--electric);}
+.role-head{
+  display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.5rem;
+}
+.role-icon{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:.95rem;
+  background:color-mix(in oklab,var(--role) 15%,transparent);
+  border:1px solid color-mix(in oklab,var(--role) 40%,transparent);
+  color:var(--role);
+}
+.role-title{
+  font-family:var(--font-display);font-variation-settings:"opsz" 144;
+  font-weight:400;font-size:1.1rem;letter-spacing:-.01em;line-height:1.2;
+}
+.role-sub{font-family:var(--font-mono);font-size:.65rem;
+  letter-spacing:.15em;color:var(--role);text-transform:uppercase;margin-top:.15rem;}
+.role-desc{color:var(--ink-mute);font-size:.82rem;margin-bottom:1rem;line-height:1.45;}
+.role-actions{display:flex;flex-direction:column;gap:.5rem;}
+.action{
+  display:block;text-align:left;padding:.7rem .9rem;
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  color:var(--ink);cursor:pointer;font-family:var(--font-sans);
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.action:hover:not(:disabled){border-color:var(--role);}
+.action:disabled{opacity:.5;cursor:not-allowed;}
+.action-name{font-size:.88rem;font-weight:500;display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+.action-name .cost{font-family:var(--font-mono);font-size:.7rem;color:var(--role);letter-spacing:.05em;}
+.action-hint{font-size:.72rem;color:var(--ink-dim);margin-top:.2rem;line-height:1.4;}
+.action-progress{
+  position:absolute;bottom:0;left:0;height:2px;background:var(--role);
+  transition:width .3s linear;
+}
+.action.active{border-color:var(--role);background:color-mix(in oklab,var(--role) 8%,var(--surface));}
+.action.spent{opacity:.35;}
+.action.spent .action-name .cost{color:var(--ink-dim);}
+.action-status{
+  font-family:var(--font-mono);font-size:.65rem;color:var(--role);
+  letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;
+}
+
+/* EVENT LOG + SCORE */
+.game-bottom{display:grid;grid-template-columns:1fr 320px;gap:1rem;}
+@media (max-width:800px){.game-bottom{grid-template-columns:1fr}}
+
+.log-panel{max-height:280px;overflow:hidden;display:flex;flex-direction:column;}
+.log-list{
+  flex:1;overflow-y:auto;padding-right:.4rem;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent;
+}
+.log-list::-webkit-scrollbar{width:6px;}
+.log-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.log-item{
+  display:flex;align-items:flex-start;gap:.7rem;padding:.5rem 0;
+  border-bottom:1px solid var(--line-soft);font-size:.82rem;
+}
+.log-item:last-child{border-bottom:0}
+.log-time{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-dim);
+  flex-shrink:0;padding-top:.15rem;letter-spacing:.03em;}
+.log-icon{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:.65rem;
+  background:color-mix(in oklab,var(--ic) 15%,transparent);
+  border:1px solid color-mix(in oklab,var(--ic) 40%,transparent);
+  color:var(--ic);
+}
+.log-item.event{--ic:var(--red);}
+.log-item.action{--ic:var(--ember);}
+.log-item.auto{--ic:var(--electric);}
+.log-item.info{--ic:var(--ink-dim);}
+.log-body{flex:1;color:var(--ink-mute);line-height:1.4;padding-top:.15rem;}
+.log-body b{color:var(--ink);font-weight:500}
+
+/* SCORE */
+.score-panel{display:flex;flex-direction:column;}
+.score-main{
+  text-align:center;padding:.5rem 0 1rem;border-bottom:1px solid var(--line-soft);
+  margin-bottom:1rem;
+}
+.score-val{
+  font-family:var(--font-display);font-variation-settings:"opsz" 144;
+  font-weight:400;font-size:3.5rem;line-height:1;letter-spacing:-.03em;
+  color:var(--ink);
+}
+.score-val.gr{color:var(--grid)}
+.score-val.em{color:var(--ember)}
+.score-val.bd{color:var(--red)}
+.score-lbl{font-family:var(--font-mono);font-size:.7rem;
+  color:var(--ink-dim);letter-spacing:.15em;text-transform:uppercase;margin-top:.4rem;}
+.score-details{display:flex;flex-direction:column;gap:.55rem;}
+.score-line{display:flex;justify-content:space-between;
+  font-family:var(--font-mono);font-size:.78rem;}
+.score-line span:first-child{color:var(--ink-mute)}
+.score-line span:last-child{color:var(--ink);font-weight:500}
+
+/* DEBRIEF OVERLAY */
+.debrief{
+  position:fixed;inset:0;background:color-mix(in oklab,var(--bg) 85%,transparent);
+  backdrop-filter:blur(12px);z-index:200;display:none;
+  align-items:center;justify-content:center;padding:2rem;
+  animation:fadeIn .3s ease;
+}
+.debrief.show{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.debrief-card{
+  max-width:560px;width:100%;background:var(--bg-soft);
+  border:1px solid var(--line);border-radius:20px;padding:2rem;
+}
+.debrief h3{
+  font-family:var(--font-display);font-variation-settings:"opsz" 144;
+  font-weight:400;font-size:2rem;line-height:1;letter-spacing:-.02em;
+  margin-bottom:.5rem;
+}
+.debrief h3 em{font-style:italic;color:var(--ember);}
+.debrief-lede{color:var(--ink-mute);margin-bottom:1.5rem;font-size:.95rem;line-height:1.55;}
+.debrief-metrics{
+  display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem;
+  padding:1rem;background:var(--surface);border-radius:12px;
+}
+.dm{font-family:var(--font-mono);font-size:.8rem;}
+.dm-lbl{color:var(--ink-dim);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem;}
+.dm-val{color:var(--ink);font-weight:500;font-size:.95rem;}
+.debrief-verdict{
+  padding:1rem 1.2rem;border-radius:10px;margin-bottom:1.5rem;
+  border-left:3px solid var(--ember);background:color-mix(in oklab,var(--ember) 10%,transparent);
+  font-size:.92rem;line-height:1.55;color:var(--ink);
+}
+.debrief-actions{display:flex;gap:.6rem;flex-wrap:wrap;}
+.db-btn{
+  padding:.75rem 1.3rem;border-radius:100px;border:1px solid var(--line);
+  background:transparent;color:var(--ink);cursor:pointer;font-family:var(--font-sans);
+  font-size:.88rem;font-weight:500;transition:all .2s;
+}
+.db-btn:hover{border-color:var(--ember);color:var(--ember)}
+.db-btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.db-btn.primary:hover{background:var(--ember);border-color:var(--ember);color:#1A1814;}
+
+/* LEARN */
+.learn{max-width:var(--maxw);margin:4rem auto 0;padding:0 1.5rem 5rem;}
+.learn-eyebrow{
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--ember);margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:.8rem;
+}
+.learn-eyebrow::before{content:"";width:24px;height:1px;background:currentColor}
+.learn h2{
+  font-family:var(--font-display);font-variation-settings:"opsz" 144;
+  font-weight:350;font-size:clamp(1.6rem,3vw,2.4rem);
+  line-height:1.15;letter-spacing:-.02em;max-width:22ch;margin-bottom:2rem;
+}
+.learn h2 em{font-style:italic;color:var(--ember);font-weight:300}
+.learn-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2rem;}
+@media (max-width:800px){.learn-grid{grid-template-columns:1fr;gap:1.5rem}}
+.learn-body p{color:var(--ink-mute);line-height:1.7;margin-bottom:1rem;font-size:.97rem;}
+.learn-body p strong{color:var(--ink);font-weight:500}
+.learn-body code{
+  font-family:var(--font-mono);font-size:.88em;
+  color:var(--ember);background:var(--surface);
+  padding:.08em .35em;border-radius:4px;
+}
+.equation{
+  padding:1rem 1.2rem;background:var(--surface);border-radius:8px;
+  font-family:var(--font-mono);font-size:.9rem;color:var(--ink);
+  margin:1rem 0;line-height:1.6;
+  border-left:2px solid var(--ember);
+}
+.learn-card{border:1px solid var(--line);border-radius:12px;padding:1.4rem;
+  background:var(--bg-soft);margin-bottom:1rem;}
+.learn-card h4{
+  font-family:var(--font-display);font-weight:400;font-size:1.1rem;
+  margin-bottom:.5rem;letter-spacing:-.01em;
+}
+.learn-card h4 em{color:var(--electric);font-style:italic;}
+.learn-card p{color:var(--ink-mute);font-size:.9rem;line-height:1.55;}
+.learn-card p strong{color:var(--ink);font-weight:500}
+
+/* FOOTER */
+footer{padding:2.5rem 1.5rem 2rem;border-top:1px solid var(--line-soft);
+  background:var(--bg-soft);margin-top:3rem;}
+.footer-inner{
+  max-width:var(--maxw);margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:1rem;flex-wrap:wrap;
+  font-family:var(--font-mono);font-size:.74rem;
+  letter-spacing:.1em;color:var(--ink-dim);text-transform:uppercase;
+}
+.footer-inner .brand{text-transform:none;letter-spacing:normal;
+  font-family:var(--font-display);font-size:1.1rem;color:var(--ink);}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.footer-links a:hover{color:var(--ember)}
+
+@media (max-width:600px){
+  .hero{padding-top:6rem}
+  .dial-hz{font-size:1.9rem}
+  .scenario-row{gap:.4rem}
+  .scen-btn{padding:.5rem .8rem;font-size:.78rem;}
+  .scen-btn small{display:none}
+}
+</style>
 </head>
 <body>
 
-  <h1>⚡ Frequency Game – Can You Keep the Grid at 50 Hz?</h1>
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-mark"></span>
+      <span>WiseWatt<em>&nbsp;/&nbsp;lab</em></span>
+    </a>
+    <a href="index.html" class="nav-back">
+      <i class="fas fa-arrow-left"></i> Back to WiseWatt
+    </a>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <i class="fas fa-circle-half-stroke"></i>
+    </button>
+  </div>
+</nav>
 
-  <div class="container">
-    <div class="card">
-      <label for="generation">🛠️ Total Generation (MW)</label>
-      <input type="range" id="generation" min="0" max="2000" value="1000">
-      <div class="icon-grid">
-        <div class="icon-item"><img src="https://img.icons8.com/emoji/48/000000/sun-emoji.png" alt="Solar">Solar</div>
-        <div class="icon-item"><img src="https://img.icons8.com/ios-filled/50/000000/wind.png" alt="Wind">Wind</div>
-        <div class="icon-item"><img src="https://img.icons8.com/ios-filled/50/000000/factory.png" alt="Coal">Coal</div>
-        <div class="icon-item"><img src="https://img.icons8.com/ios-filled/50/000000/fire-element.png" alt="Gas">Gas</div>
-        <div class="icon-item"><img src="https://img.icons8.com/ios-filled/50/000000/radioactive.png" alt="Nuclear">Nuclear</div>
-        <div class="icon-item"><img src="https://img.icons8.com/ios-filled/50/000000/waterfall.png" alt="Hydro">Hydro</div>
+<header class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="eyebrow">Lab 07 · Playable · You are the control room</div>
+  <h1 class="display">The Frequency <em>Game.</em></h1>
+  <p class="lede">
+    You are the <strong>duty engineer at the RLDC</strong>. A generation unit trips. Frequency starts falling.
+    You have seconds to decide: activate reserves, order load shedding, wait for the governor?
+    Play across three eras of India's grid — as inertia falls and RE rises, the same event becomes harder to survive.
+  </p>
+</header>
+
+<!-- SCENARIO PICKER -->
+<div class="scenarios">
+  <div class="scenario-row">
+    <span class="scen-lbl">Scenario</span>
+    <button class="scen-btn active" data-scen="0"><span>Baseline</span><small>2015 · 10% RE</small></button>
+    <button class="scen-btn" data-scen="1"><span>Modern</span><small>2025 · 35% RE</small></button>
+    <button class="scen-btn" data-scen="2"><span>Future</span><small>2030 · 60% RE</small></button>
+    <div class="scen-controls">
+      <button class="ctrl-btn play" id="playBtn"><i class="fas fa-play"></i><span id="playLabel">Start</span></button>
+      <button class="ctrl-btn" id="resetBtn" title="Reset"><i class="fas fa-rotate-left"></i></button>
+    </div>
+  </div>
+</div>
+
+<main class="game">
+
+  <!-- TOP: DIAL + CHART + STATE -->
+  <div class="game-top">
+
+    <!-- DIAL -->
+    <div class="panel dial-panel">
+      <div class="panel-title">
+        <span><i class="fas fa-gauge-high" style="color:var(--ember);font-size:.8rem"></i> Grid frequency</span>
+        <small id="tSim">t = 0 s</small>
       </div>
-
-      <label for="storage">🔋 Storage Dispatch (MW)</label>
-      <input type="range" id="storage" min="-500" max="500" value="0">
-      <div>(+ve: Discharging, -ve: Charging)</div>
-
-      <label for="demand">🏙️ Total Demand (MW)</label>
-      <input type="range" id="demand" min="500" max="2500" value="1500">
-
-      <div class="frequency">Grid Frequency: <span id="frequency">50.00</span> Hz</div>
-      <div id="message"></div>
+      <div class="dial-wrap">
+        <svg class="dial-svg" viewBox="0 0 400 280">
+          <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Colored arcs will be drawn by JS -->
+          <g id="dialArcs"></g>
+          <!-- Ticks -->
+          <g id="dialTicks"></g>
+          <!-- Labels -->
+          <g id="dialLabels"></g>
+          <!-- Needle -->
+          <g id="needleGroup" style="transform-origin:200px 220px;transition:transform .1s linear;">
+            <line x1="200" y1="220" x2="200" y2="80" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" filter="url(#glow)"/>
+            <circle cx="200" cy="220" r="10" fill="var(--surface)" stroke="var(--ink)" stroke-width="2"/>
+            <circle cx="200" cy="220" r="4" fill="var(--ember)"/>
+          </g>
+        </svg>
+        <div class="dial-readout">
+          <div class="dial-hz" id="dialHz">50.000</div>
+          <div class="dial-unit">HERTZ</div>
+          <div class="dial-rocof">RoCoF <b id="dialRocof">+0.00</b> Hz/s</div>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>🌀 Real-Time Grid Events</h3>
-      <div id="event-log">No events yet.</div>
+    <!-- CHART -->
+    <div class="panel chart-panel">
+      <div class="panel-title">
+        <span><i class="fas fa-chart-line" style="color:var(--ember);font-size:.8rem"></i> Frequency trace · last 120 s</span>
+        <small id="chartNadir">Nadir: —</small>
+      </div>
+      <svg class="chart-svg" id="chartSvg" viewBox="0 0 700 280" preserveAspectRatio="none">
+        <rect class="ch-band" id="chBand" x="40" y="0" width="640" height="0"/>
+        <line class="ch-limit trip" id="chTripHi" x1="40" y1="0" x2="680" y2="0"/>
+        <line class="ch-limit stat" id="chStatHi" x1="40" y1="0" x2="680" y2="0"/>
+        <line class="ch-limit nom" id="chNom" x1="40" y1="0" x2="680" y2="0"/>
+        <line class="ch-limit stat" id="chStatLo" x1="40" y1="0" x2="680" y2="0"/>
+        <line class="ch-limit trip" id="chTripLo" x1="40" y1="0" x2="680" y2="0"/>
+        <line class="ch-axis" x1="40" y1="10" x2="40" y2="250"/>
+        <line class="ch-axis" x1="40" y1="250" x2="680" y2="250"/>
+        <g id="chYLbls"></g>
+        <g id="chXLbls"></g>
+        <text class="ch-tag" x="676" y="0" text-anchor="end" id="chTripHiLbl">TRIP 50.20</text>
+        <text class="ch-tag" x="676" y="0" text-anchor="end" id="chStatHiLbl">STAT 50.05</text>
+        <text class="ch-tag" x="676" y="0" text-anchor="end" id="chNomLbl">50.00</text>
+        <text class="ch-tag" x="676" y="0" text-anchor="end" id="chStatLoLbl">STAT 49.90</text>
+        <text class="ch-tag" x="676" y="0" text-anchor="end" id="chTripLoLbl">UFLS 49.40</text>
+        <path class="ch-line" id="chLine" d=""/>
+      </svg>
     </div>
 
-    <div class="card">
-      <h3>🎛️ Controls & Insights</h3>
-      <ul>
-        <li>Try responding to random events quickly to stabilize frequency.</li>
-        <li>Watch how different sources respond to real-world challenges.</li>
-        <li>Balance reliability, flexibility, and sustainability.</li>
-      </ul>
+    <!-- STATE -->
+    <div class="panel state-panel">
+      <div class="panel-title">
+        <span><i class="fas fa-server" style="color:var(--ember);font-size:.8rem"></i> Grid state</span>
+      </div>
+      <div class="state-list">
+        <div class="state-row">
+          <span class="state-label">Load</span>
+          <span class="state-value" id="stLoad">— <small>GW</small></span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Generation</span>
+          <span class="state-value" id="stGen">— <small>GW</small></span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Imbalance</span>
+          <span class="state-value" id="stImb">— <small>MW</small></span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">RE share</span>
+          <span class="state-value el" id="stRE">— <small>%</small></span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">System inertia (H)</span>
+          <span class="state-value" id="stH">— <small>s</small></span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">Reserve headroom</span>
+          <span class="state-value gr" id="stReserve">— <small>MW</small></span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script>
-    const generationSlider = document.getElementById('generation');
-    const demandSlider = document.getElementById('demand');
-    const storageSlider = document.getElementById('storage');
-    const frequencyDisplay = document.getElementById('frequency');
-    const messageDisplay = document.getElementById('message');
-    const eventLog = document.getElementById('event-log');
+  <!-- ROLES -->
+  <div class="roles">
 
-    function calculateFrequency() {
-      const generation = parseInt(generationSlider.value);
-      const demand = parseInt(demandSlider.value);
-      const storage = parseInt(storageSlider.value);
+    <!-- RLDC -->
+    <div class="panel role-panel" data-role="rldc">
+      <div class="role-head">
+        <div class="role-icon"><i class="fas fa-headset"></i></div>
+        <div>
+          <div class="role-title">Control Room <em>Engineer</em></div>
+          <div class="role-sub">RLDC · Duty engineer</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Regional dispatch. You see ACE, coordinate reserves across states, and pull the load-shedding lever if physics runs out.
+      </div>
+      <div class="role-actions" data-actions="rldc"></div>
+    </div>
 
-      const netSupply = generation + storage;
-      const imbalance = netSupply - demand;
-      const frequency = 50 + imbalance / 1000;
-      const frequencyClamped = Math.max(48, Math.min(52, frequency));
+    <!-- COAL PLANT -->
+    <div class="panel role-panel" data-role="coal">
+      <div class="role-head">
+        <div class="role-icon"><i class="fas fa-fire"></i></div>
+        <div>
+          <div class="role-title">Thermal Plant <em>Operator</em></div>
+          <div class="role-sub">500 MW unit · Vindhyachal</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Governor droop kicks in automatically. Above that, you can push manual ramp or dip into spinning reserve — bounded by boiler dynamics.
+      </div>
+      <div class="role-actions" data-actions="coal"></div>
+    </div>
 
-      frequencyDisplay.textContent = frequencyClamped.toFixed(2);
+    <!-- BESS / RE -->
+    <div class="panel role-panel" data-role="bess">
+      <div class="role-head">
+        <div class="role-icon"><i class="fas fa-battery-half"></i></div>
+        <div>
+          <div class="role-title">BESS + RE <em>Operator</em></div>
+          <div class="role-sub">Grid-forming inverter park</div>
+        </div>
+      </div>
+      <div class="role-desc">
+        Milliseconds, not seconds. Fast frequency response from the battery, and synthetic inertia if the plant is grid-forming.
+      </div>
+      <div class="role-actions" data-actions="bess"></div>
+    </div>
+  </div>
 
-      if (frequencyClamped > 50.2) {
-        messageDisplay.textContent = "Over-frequency! Too much generation.";
-      } else if (frequencyClamped < 49.8) {
-        messageDisplay.textContent = "Under-frequency! Demand exceeds supply.";
+  <!-- LOG + SCORE -->
+  <div class="game-bottom">
+    <div class="panel log-panel">
+      <div class="panel-title">
+        <span><i class="fas fa-list-check" style="color:var(--ember);font-size:.8rem"></i> Event log</span>
+      </div>
+      <div class="log-list" id="logList">
+        <div class="log-item info">
+          <div class="log-time">--:--</div>
+          <div class="log-icon"><i class="fas fa-info"></i></div>
+          <div class="log-body">Select a scenario and hit <b>Start</b>. Try Baseline first to see how governor response works alone.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel score-panel">
+      <div class="panel-title">
+        <span><i class="fas fa-star" style="color:var(--ember);font-size:.8rem"></i> Score</span>
+      </div>
+      <div class="score-main">
+        <div class="score-val" id="scoreVal">100</div>
+        <div class="score-lbl">out of 100</div>
+      </div>
+      <div class="score-details">
+        <div class="score-line"><span>Time in band</span><span id="scTIB">100.0%</span></div>
+        <div class="score-line"><span>Worst nadir</span><span id="scNadir">50.000 Hz</span></div>
+        <div class="score-line"><span>UFLS events</span><span id="scUFLS">0</span></div>
+        <div class="score-line"><span>Sim time</span><span id="scTime">0 s</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- LEARN -->
+<section class="learn">
+  <div class="learn-eyebrow">The physics · what the sim is actually doing</div>
+  <h2>Frequency is the <em>rhythm</em> of the whole grid.</h2>
+  <div class="learn-grid">
+    <div class="learn-body">
+      <p>
+        Every synchronous machine on the Indian grid — the coal, hydro, gas and nuclear units — spins in lockstep at
+        <strong>50 Hz</strong>. When generation matches load, they hold that rhythm. When they don't, the spinning mass
+        of those turbines either <strong>gives up</strong> kinetic energy (frequency drops) or <strong>absorbs</strong>
+        surplus (frequency rises). The relationship is the swing equation:
+      </p>
+      <div class="equation">
+        2H · d(Δf) / dt = ΔP − D · Δf
+      </div>
+      <p>
+        <code>H</code> is the system inertia constant (seconds). Historically <code>H ≈ 5 s</code>. As solar and wind —
+        which have no rotating mass — displace synchronous units, <strong>H drops</strong>. Same disturbance,
+        <strong>faster fall</strong>. That's why the "Future" scenario is harder than "Baseline" even though the
+        contingency size is the same.
+      </p>
+      <p>
+        <code>D</code> is load damping: motors slow down when frequency drops, and consume less power. It saves you
+        about 1–2% per Hz for free.
+      </p>
+      <p>
+        Beyond physics, three layers of response bring frequency back:
+        <strong>governor droop</strong> (10–30 s, automatic on every unit),
+        <strong>SRAS</strong> (secondary reserve, 30 s–5 min, dispatched by RLDC),
+        and <strong>TRAS</strong> (tertiary, minutes to an hour).
+      </p>
+    </div>
+    <div>
+      <div class="learn-card">
+        <h4>Statutory band <em>— IEGC 2023.</em></h4>
+        <p>The Indian Electricity Grid Code specifies <strong>49.90–50.05 Hz</strong> as the operating band. Beyond that,
+        deviation charges apply. Below 49.4 Hz, staged Under-Frequency Load Shedding (UFLS) fires automatically.</p>
+      </div>
+      <div class="learn-card">
+        <h4>Why RE makes it harder <em>— the RoCoF problem.</em></h4>
+        <p>Inverter-based resources have no inherent inertia. As their share rises, effective <strong>H falls</strong>.
+        Rate of Change of Frequency (RoCoF) after a trip becomes steeper — governors that used to be fast enough
+        now respond too late. Nadir goes deeper.</p>
+      </div>
+      <div class="learn-card">
+        <h4>Fast Frequency Response <em>— the BESS answer.</em></h4>
+        <p>Battery storage responds in <strong>milliseconds</strong> — faster than any synchronous governor.
+        In this sim, BESS FFR is your emergency brake before the RoCoF drives frequency past UFLS. India's ancillary
+        market is beginning to price this service explicitly.</p>
+      </div>
+      <div class="learn-card">
+        <h4>Grid-forming inverters <em>— synthetic inertia.</em></h4>
+        <p>Grid-forming (as opposed to grid-following) inverters can emulate the inertial response of a synchronous
+        machine. In your sim this is the "Virtual Inertia" action — it doesn't add MW, it lowers <strong>|df/dt|</strong>
+        by increasing effective H for 30 seconds. Real trials in Australia and the UK show this works.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEBRIEF OVERLAY -->
+<div class="debrief" id="debrief">
+  <div class="debrief-card">
+    <h3 id="debriefTitle">Scenario <em>complete</em>.</h3>
+    <p class="debrief-lede" id="debriefLede">The frequency deviation has resolved and the grid is back in the statutory band.</p>
+    <div class="debrief-metrics">
+      <div class="dm"><div class="dm-lbl">Final score</div><div class="dm-val" id="dbScore">—</div></div>
+      <div class="dm"><div class="dm-lbl">Time in band</div><div class="dm-val" id="dbTIB">—</div></div>
+      <div class="dm"><div class="dm-lbl">Worst nadir</div><div class="dm-val" id="dbNadir">—</div></div>
+      <div class="dm"><div class="dm-lbl">UFLS stages</div><div class="dm-val" id="dbUFLS">—</div></div>
+    </div>
+    <div class="debrief-verdict" id="debriefVerdict"></div>
+    <div class="debrief-actions">
+      <button class="db-btn primary" onclick="closeDebrief();resetGame();">Try again</button>
+      <button class="db-btn" onclick="closeDebrief();">Close</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="brand">WiseWatt</div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="voltage.html">Voltage Game</a>
+      <a href="tech.html">Tech</a>
+    </div>
+    <div>© 2025 · Lab 07</div>
+  </div>
+</footer>
+
+<script>
+/* ============ THEME ============ */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  localStorage.setItem('ww-theme',document.body.classList.contains('light')?'light':'dark');
+}
+if(localStorage.getItem('ww-theme')==='light')document.body.classList.add('light');
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>30));
+
+/* ============ SCENARIOS ============
+   Values grounded in POSOCO/Grid-India operational data and IEGC 2023.
+   H ~ 5s historically, projected drop to ~3s by 2030 (multiple system studies).
+   Contingency sizes: single largest unit ~800 MW, HVDC bipole ~4000 MW.
+*/
+const SCENARIOS = [
+  {
+    id: 0,
+    name: 'Baseline · 2015 Grid',
+    loadGW: 130,           // typical 2015 daytime demand
+    reShare: 0.10,
+    H_sync: 5.5,           // system inertia constant when only sync gens
+    contingency: { at: 8, name: 'Unit trip · 800 MW · Sipat', deltaMW: -800 },
+    briefing: 'Low RE, healthy inertia. Governor + SRAS should hold it. Watch how much the governor alone does.',
+  },
+  {
+    id: 1,
+    name: 'Modern · 2025 Grid',
+    loadGW: 210,
+    reShare: 0.35,
+    H_sync: 4.3,
+    contingency: { at: 8, name: 'Unit trip · 800 MW · Talcher', deltaMW: -800 },
+    briefing: 'Same trip, less inertia. RoCoF is steeper. Governor buys less time — SRAS activation timing matters.',
+  },
+  {
+    id: 2,
+    name: 'Future · 2030 High-RE Grid',
+    loadGW: 250,
+    reShare: 0.60,
+    H_sync: 3.2,
+    contingency: { at: 8, name: 'HVDC bipole loss · 3000 MW', deltaMW: -3000 },
+    briefing: 'Big contingency, thin inertia. RoCoF hits fast. BESS FFR is essentially the only response quick enough to stop UFLS.',
+  },
+];
+
+/* ============ ACTIONS ============
+   Each action: role, name, tooltip, response profile (delay, ramp rate, target MW, duration).
+   dP is generation (positive) or load-shed (positive → treat as ΔP > 0).
+*/
+const ACTIONS = {
+  rldc: [
+    { id:'sras',    name:'Activate SRAS',            cost:'reserve',
+      hint:'Secondary reserve. ~30 s to build, ramps to +1500 MW over 5 min.',
+      delay:30, rampRate: 300/60, targetMW: 1500, duration: 300 },
+    { id:'mufls',   name:'Order manual load shedding', cost:'load',
+      hint:'Direct SLDCs to shed ~1000 MW immediately. Political & customer cost.',
+      delay:5, rampRate: 1000, targetMW: 1000, duration: 300, mode:'load' },
+    { id:'tras',    name:'Activate TRAS + regional',  cost:'reserve',
+      hint:'Tertiary + inter-regional support. Big & slow: 60 s delay, +2000 MW over 8 min.',
+      delay:60, rampRate: 250/60, targetMW: 2000, duration: 480 },
+  ],
+  coal: [
+    { id:'ramp',    name:'Manual boiler ramp',        cost:'MW',
+      hint:'Push setpoint. +400 MW over 2 min. Bounded by ramp rate & boiler thermals.',
+      delay:8, rampRate: 400/120, targetMW: 400, duration: 300 },
+    { id:'spin',    name:'Deploy spinning reserve',   cost:'fast',
+      hint:'Governor headroom you were holding back. +200 MW in 15 s.',
+      delay:0, rampRate: 200/15, targetMW: 200, duration: 300 },
+  ],
+  bess: [
+    { id:'ffr',     name:'BESS FFR discharge',        cost:'MWh',
+      hint:'Fast Frequency Response. +500 MW in 1 s, sustained 60 s then depletes.',
+      delay:1, rampRate: 500, targetMW: 500, duration: 60 },
+    { id:'inertia', name:'Grid-forming synthetic inertia', cost:'H',
+      hint:'Adds ~2 s to effective H for 30 s. Slows |df/dt| — doesn\'t add MW.',
+      delay:0, rampRate: 0, targetMW: 0, duration: 30, mode:'inertia', inertiaBoost:2 },
+  ],
+};
+
+/* ============ STATE ============ */
+let sim = null;
+
+function newSim(scenarioIdx){
+  const S = SCENARIOS[scenarioIdx];
+  const loadMW = S.loadGW * 1000;
+  return {
+    scenario: scenarioIdx,
+    t: 0,                    // sim seconds
+    running: false,
+
+    f: 50.0,
+    rocof: 0,
+
+    pLoad: loadMW,
+    pDispatched: loadMW,     // starts balanced
+    pGov: 0,                 // primary response contribution
+    pReserve: 0,             // sum of activated ramps
+    S_base: loadMW,          // MVA base ~ current online capacity
+
+    H_base: S.H_sync,        // baseline inertia
+    H_boost: 0,              // temporary boost from synth inertia
+    reShare: S.reShare,
+
+    spinReserveMW: 3000,     // system-wide primary reserve headroom
+    contingencyFired: false,
+
+    activeActions: [],       // { action, elapsed, phase: 'delay'|'ramp'|'hold'|'done', delivered }
+    spentActions: new Set(),
+
+    // Stats
+    timeInBand: 0,
+    worstNadir: 50.0,
+    worstZenith: 50.0,
+    uflsFired: new Set(),
+
+    // Chart trace: {t, f}
+    trace: [{t:0, f:50}],
+  };
+}
+
+/* ============ SIMULATION ============ */
+const SPEED = 3;          // sim speed multiplier (3x real time)
+const R_gov = 0.05;       // governor droop
+const T_gov = 8;          // governor time constant (s)
+const D_load = 1.5;       // load damping % per Hz
+const F_NOM = 50;
+const STAT_LO = 49.90, STAT_HI = 50.05;
+const TRIP_LO = 49.40;    // UFLS starts here
+const UFLS_STAGES = [
+  { threshold: 49.4, shed: 0.05 },
+  { threshold: 49.2, shed: 0.05 },
+  { threshold: 49.0, shed: 0.05 },
+  { threshold: 48.8, shed: 0.05 },
+  { threshold: 48.6, shed: 0.10 },
+];
+
+function step(dt){
+  if(!sim || !sim.running) return;
+  const s = sim;
+  s.t += dt;
+
+  // --- Fire scheduled contingency ---
+  const scen = SCENARIOS[s.scenario];
+  if(!s.contingencyFired && s.t >= scen.contingency.at){
+    s.pDispatched += scen.contingency.deltaMW;  // negative for trip
+    // trip also removes some inertia (rough approx: unit was contributing to S_base)
+    // For simplicity we keep S_base fixed at initial value.
+    s.contingencyFired = true;
+    addLog('event', `Contingency: ${scen.contingency.name}`);
+  }
+
+  // --- Advance active actions ---
+  let inertiaBoost = 0;
+  for(const a of s.activeActions){
+    if(a.phase === 'done') continue;
+    a.elapsed += dt;
+    if(a.phase === 'delay'){
+      if(a.elapsed >= a.action.delay){
+        a.phase = 'ramp';
+        a.elapsed = 0;
+        addLog('action', `<b>${a.action.name}</b> — response begins.`);
+      }
+    } else if(a.phase === 'ramp'){
+      if(a.action.mode === 'load'){
+        // Immediate load shed
+        s.pLoad -= a.action.targetMW;
+        a.delivered = a.action.targetMW;
+        a.phase = 'hold';
+        a.elapsed = 0;
+        addLog('action', `Load shed: <b>−${a.action.targetMW.toFixed(0)} MW</b> across SLDCs.`);
+      } else if(a.action.mode === 'inertia'){
+        inertiaBoost += a.action.inertiaBoost;
+        a.phase = 'hold';
+        a.elapsed = 0;
       } else {
-        messageDisplay.textContent = "Grid is stable. Great job!";
+        const step_MW = a.action.rampRate * dt;
+        a.delivered = Math.min(a.action.targetMW, a.delivered + step_MW);
+        if(a.delivered >= a.action.targetMW){
+          a.phase = 'hold';
+          a.elapsed = 0;
+        }
+      }
+    } else if(a.phase === 'hold'){
+      if(a.action.mode === 'inertia'){
+        inertiaBoost += a.action.inertiaBoost;
+      }
+      if(a.elapsed >= a.action.duration){
+        // For BESS FFR: energy depletes → ramp back down
+        if(a.action.id === 'ffr'){
+          a.delivered = Math.max(0, a.delivered - 500 * dt);  // fast ramp-down when depleted
+          if(a.delivered <= 0){ a.phase = 'done'; addLog('info', `BESS FFR energy depleted, contribution ended.`); }
+        } else if(a.action.mode === 'inertia'){
+          a.phase = 'done';
+          addLog('info', `Synthetic inertia support ended.`);
+        }
       }
     }
+  }
 
-    generationSlider.oninput = calculateFrequency;
-    demandSlider.oninput = calculateFrequency;
-    storageSlider.oninput = calculateFrequency;
+  // --- Compute reserve contribution ---
+  let pReserveTotal = 0;
+  for(const a of s.activeActions){
+    if(a.action.mode === 'load' || a.action.mode === 'inertia') continue;
+    if(a.phase === 'ramp' || a.phase === 'hold') pReserveTotal += a.delivered || 0;
+  }
+  s.pReserve = pReserveTotal;
 
-    calculateFrequency();
+  // --- Governor primary response (first-order lag toward target) ---
+  const df = s.f - F_NOM;
+  const K = 1 / R_gov;  // gain
+  let govTarget = -K * df / F_NOM * s.S_base;  // MW target from droop, in same units as S_base
+  // Actually let's use standard form: ΔP_gov (pu) = -(1/R) * Δf(pu)
+  // Δf(pu) = df/F_NOM
+  // ΔP_gov (MW) = -(1/R) * (df/F_NOM) * S_base
+  // Cap by available spinning reserve
+  govTarget = Math.max(-s.spinReserveMW, Math.min(s.spinReserveMW, govTarget));
+  // Small dead band
+  if(Math.abs(df) < 0.03) govTarget *= 0.1;
+  s.pGov += (govTarget - s.pGov) * dt / T_gov;
 
-    const situations = [
-      "🌧️ Cloudy skies reduce solar output by 300 MW",
-      "🌬️ Wind drops due to low pressure – wind generation -200 MW",
-      "⚙️ Coal plant maintenance – drop 150 MW",
-      "🔥 Gas price spike! Must reduce gas by 100 MW",
-      "🌊 Hydro surge – +200 MW boost",
-      "🔋 Storage fully charged – cannot accept more",
-      "🌞 Solar ramp-up – extra 250 MW",
-      "⚡ EV charging boom – demand up by 300 MW",
-      "☢️ Nuclear maintenance – reduce 200 MW"
-    ];
+  // --- Total generation ---
+  const P_gen = s.pDispatched + s.pGov + s.pReserve;
 
-    function triggerRandomEvent() {
-      const event = situations[Math.floor(Math.random() * situations.length)];
-      const timestamp = new Date().toLocaleTimeString();
-      const logEntry = `[${timestamp}] ${event}`;
-      eventLog.innerHTML = logEntry + '<br>' + eventLog.innerHTML;
+  // --- Load with damping ---
+  const P_load_effective = s.pLoad * (1 + (D_load/100) * df);
 
-      if (event.includes("solar")) generationSlider.value = Math.max(0, generationSlider.value - 300);
-      if (event.includes("wind")) generationSlider.value = Math.max(0, generationSlider.value - 200);
-      if (event.includes("Coal")) generationSlider.value = Math.max(0, generationSlider.value - 150);
-      if (event.includes("gas")) generationSlider.value = Math.max(0, generationSlider.value - 100);
-      if (event.includes("Hydro")) generationSlider.value = Math.min(2000, parseInt(generationSlider.value) + 200);
-      if (event.includes("Solar ramp")) generationSlider.value = Math.min(2000, parseInt(generationSlider.value) + 250);
-      if (event.includes("EV")) demandSlider.value = Math.min(2500, parseInt(demandSlider.value) + 300);
-      if (event.includes("Nuclear")) generationSlider.value = Math.max(0, generationSlider.value - 200);
+  // --- Imbalance ---
+  const dP = P_gen - P_load_effective;
+  const dP_pu = dP / s.S_base;
 
-      calculateFrequency();
+  // --- df/dt from swing equation ---
+  const H_eff = Math.max(1.0, s.H_base + inertiaBoost);
+  const dfdt = (F_NOM / (2 * H_eff)) * dP_pu;
+  s.rocof = dfdt;
+  s.f += dfdt * dt;
+
+  // --- Automatic UFLS ---
+  for(const stage of UFLS_STAGES){
+    if(s.f < stage.threshold && !s.uflsFired.has(stage.threshold)){
+      const shedMW = s.pLoad * stage.shed;
+      s.pLoad -= shedMW;
+      s.uflsFired.add(stage.threshold);
+      addLog('auto', `Automatic UFLS at <b>${stage.threshold.toFixed(1)} Hz</b>: shed ${shedMW.toFixed(0)} MW (${(stage.shed*100).toFixed(0)}%).`);
     }
+  }
 
-    setInterval(triggerRandomEvent, 15000); // every 15 sec
-  </script>
+  // --- Stats ---
+  if(s.f >= STAT_LO && s.f <= STAT_HI) s.timeInBand += dt;
+  if(s.f < s.worstNadir) s.worstNadir = s.f;
+  if(s.f > s.worstZenith) s.worstZenith = s.f;
+
+  // Trace (keep last ~150 seconds)
+  s.trace.push({t: s.t, f: s.f});
+  while(s.trace.length > 3000) s.trace.shift();
+
+  // --- Auto-end: back in band for a while, or trip zone ---
+  if(s.contingencyFired && s.t > scen.contingency.at + 20){
+    const backInBand = s.f >= STAT_LO && s.f <= STAT_HI && Math.abs(s.rocof) < 0.005;
+    if(backInBand){
+      s.stableFor = (s.stableFor || 0) + dt;
+      if(s.stableFor > 25){  // 25 s of stability
+        s.running = false;
+        endScenario('resolved');
+        return;
+      }
+    } else s.stableFor = 0;
+  }
+  if(s.f < 47.5 || s.f > 51.5){
+    s.running = false;
+    endScenario('collapsed');
+    return;
+  }
+  if(s.t > 180){
+    s.running = false;
+    endScenario('timeout');
+    return;
+  }
+}
+
+/* ============ ACTIONS: activation ============ */
+function activateAction(role, id){
+  if(!sim || !sim.running) return;
+  const action = ACTIONS[role].find(a => a.id === id);
+  if(!action) return;
+  if(sim.spentActions.has(role+':'+id)) return;
+  sim.spentActions.add(role+':'+id);
+  sim.activeActions.push({
+    action, elapsed: 0, phase: 'delay', delivered: 0, role
+  });
+  addLog('action', `<b>${action.name}</b> — activated. ${action.delay}s to effect.`);
+  renderActions();
+}
+
+/* ============ RENDERING ============ */
+const dialArcs = document.getElementById('dialArcs');
+const dialTicks = document.getElementById('dialTicks');
+const dialLabels = document.getElementById('dialLabels');
+const needleGroup = document.getElementById('needleGroup');
+
+// Dial geometry
+const DIAL = { cx: 200, cy: 220, r: 150, fMin: 48.5, fMax: 51.5,
+               angMin: -135, angMax: 135 }; // degrees from vertical up
+function fToAngle(f){
+  const frac = (f - DIAL.fMin) / (DIAL.fMax - DIAL.fMin);
+  return DIAL.angMin + frac * (DIAL.angMax - DIAL.angMin);
+}
+function polar(angDeg, r){
+  const a = (angDeg - 90) * Math.PI / 180;
+  return [DIAL.cx + r * Math.cos(a), DIAL.cy + r * Math.sin(a)];
+}
+function arcPath(fStart, fEnd, r){
+  const a0 = fToAngle(fStart), a1 = fToAngle(fEnd);
+  const [x0,y0] = polar(a0, r);
+  const [x1,y1] = polar(a1, r);
+  const large = (a1-a0) > 180 ? 1 : 0;
+  return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+}
+
+function drawDialStatic(){
+  // Bands
+  const bands = [
+    { from: 48.5, to: 49.4, color: 'var(--red)' },
+    { from: 49.4, to: 49.90, color: 'var(--ember)' },
+    { from: 49.90, to: 50.05, color: 'var(--grid)' },
+    { from: 50.05, to: 50.2, color: 'var(--ember)' },
+    { from: 50.2, to: 51.5, color: 'var(--red)' },
+  ];
+  dialArcs.innerHTML = bands.map(b =>
+    `<path d="${arcPath(b.from, b.to, DIAL.r)}" fill="none" stroke="${b.color}" stroke-width="12" opacity="0.85" stroke-linecap="butt"/>`
+  ).join('') +
+  // inner faint arc
+  `<path d="${arcPath(DIAL.fMin, DIAL.fMax, DIAL.r - 22)}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+
+  // Ticks + labels
+  let ticks = '', labels = '';
+  for(let f = 49.0; f <= 51.0; f += 0.5){
+    const [x0,y0] = polar(fToAngle(f), DIAL.r - 6);
+    const [x1,y1] = polar(fToAngle(f), DIAL.r - 18);
+    ticks += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="var(--ink-mute)" stroke-width="1.5"/>`;
+    const [xl,yl] = polar(fToAngle(f), DIAL.r - 32);
+    labels += `<text x="${xl}" y="${yl}" font-family="var(--font-mono)" font-size="11" fill="var(--ink-mute)" text-anchor="middle" dominant-baseline="middle">${f.toFixed(1)}</text>`;
+  }
+  for(let f = 49.0; f <= 51.0; f += 0.1){
+    if(Math.abs(f - Math.round(f*2)/2) < 0.01) continue;
+    const [x0,y0] = polar(fToAngle(f), DIAL.r - 6);
+    const [x1,y1] = polar(fToAngle(f), DIAL.r - 12);
+    ticks += `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="var(--ink-dim)" stroke-width="0.8"/>`;
+  }
+  dialTicks.innerHTML = ticks;
+  dialLabels.innerHTML = labels;
+}
+
+function drawDial(){
+  const s = sim || { f: 50.0, rocof: 0 };
+  const ang = fToAngle(s.f);
+  needleGroup.style.transform = `rotate(${ang}deg)`;
+
+  const dh = document.getElementById('dialHz');
+  dh.textContent = s.f.toFixed(3);
+  dh.className = 'dial-hz ' + (
+    s.f >= STAT_LO && s.f <= STAT_HI ? 'good' :
+    s.f >= 49.7 && s.f <= 50.2 ? 'warn' : 'bad'
+  );
+  const rc = document.getElementById('dialRocof');
+  rc.textContent = (s.rocof >= 0 ? '+' : '') + s.rocof.toFixed(3);
+  document.getElementById('tSim').textContent = `t = ${Math.floor(s.t)} s`;
+}
+
+/* ---- Chart ---- */
+const CH = { x0: 40, x1: 680, y0: 10, y1: 250, fMin: 48.8, fMax: 50.6, tWin: 120 };
+function chY(f){ return CH.y1 - ((f - CH.fMin) / (CH.fMax - CH.fMin)) * (CH.y1 - CH.y0); }
+function chX(t, tRight){ return CH.x1 - ((tRight - t) / CH.tWin) * (CH.x1 - CH.x0); }
+
+function drawChartStatic(){
+  const yLbls = document.getElementById('chYLbls');
+  yLbls.innerHTML = '';
+  [49.0, 49.5, 50.0, 50.5].forEach(f=>{
+    yLbls.innerHTML += `<text class="ch-axis-lbl" x="34" y="${chY(f)+3}" text-anchor="end">${f.toFixed(1)}</text>
+      <line class="ch-axis" x1="40" y1="${chY(f)}" x2="680" y2="${chY(f)}" opacity="0.12"/>`;
+  });
+  const setLine = (el, f) => { el.setAttribute('y1', chY(f)); el.setAttribute('y2', chY(f)); };
+  setLine(document.getElementById('chTripHi'), 50.2);
+  setLine(document.getElementById('chStatHi'), STAT_HI);
+  setLine(document.getElementById('chNom'), 50.0);
+  setLine(document.getElementById('chStatLo'), STAT_LO);
+  setLine(document.getElementById('chTripLo'), 49.4);
+  document.getElementById('chBand').setAttribute('y', chY(STAT_HI));
+  document.getElementById('chBand').setAttribute('height', chY(STAT_LO) - chY(STAT_HI));
+  document.getElementById('chTripHiLbl').setAttribute('y', chY(50.2)-3);
+  document.getElementById('chStatHiLbl').setAttribute('y', chY(STAT_HI)-3);
+  document.getElementById('chNomLbl').setAttribute('y', chY(50.0)-3);
+  document.getElementById('chStatLoLbl').setAttribute('y', chY(STAT_LO)+10);
+  document.getElementById('chTripLoLbl').setAttribute('y', chY(49.4)+10);
+}
+
+function drawChart(){
+  if(!sim) return;
+  const tRight = Math.max(CH.tWin, sim.t);
+  const trace = sim.trace;
+  let path = '';
+  for(let i = 0; i < trace.length; i++){
+    const p = trace[i];
+    if(p.t < tRight - CH.tWin) continue;
+    const x = chX(p.t, tRight);
+    const y = chY(Math.max(CH.fMin, Math.min(CH.fMax, p.f)));
+    path += (path ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  }
+  document.getElementById('chLine').setAttribute('d', path);
+
+  document.getElementById('chartNadir').textContent =
+    'Nadir: ' + sim.worstNadir.toFixed(3) + ' Hz';
+}
+
+/* ---- State panel ---- */
+function drawState(){
+  if(!sim) return;
+  const genMW = sim.pDispatched + sim.pGov + sim.pReserve;
+  const dP = genMW - sim.pLoad;
+  document.getElementById('stLoad').innerHTML = (sim.pLoad/1000).toFixed(1) + ' <small>GW</small>';
+  document.getElementById('stGen').innerHTML  = (genMW/1000).toFixed(1) + ' <small>GW</small>';
+  const imbEl = document.getElementById('stImb');
+  imbEl.innerHTML = (dP >= 0 ? '+' : '') + dP.toFixed(0) + ' <small>MW</small>';
+  imbEl.className = 'state-value ' + (Math.abs(dP) < 50 ? 'gr' : dP < 0 ? 'bd' : 'em');
+  document.getElementById('stRE').innerHTML = (sim.reShare*100).toFixed(0) + ' <small>%</small>';
+  // Effective inertia including boost
+  let inertiaBoost = 0;
+  for(const a of sim.activeActions){
+    if(a.action.mode === 'inertia' && (a.phase === 'ramp' || a.phase === 'hold')) inertiaBoost += a.action.inertiaBoost;
+  }
+  const stH = document.getElementById('stH');
+  stH.innerHTML = (sim.H_base + inertiaBoost).toFixed(1) + ' <small>s</small>';
+  stH.className = 'state-value ' + (inertiaBoost > 0 ? 'el' : '');
+
+  const reserveLeft = Math.max(0, sim.spinReserveMW - Math.abs(sim.pGov)) + Math.max(0, 3000 - sim.pReserve);
+  document.getElementById('stReserve').innerHTML = reserveLeft.toFixed(0) + ' <small>MW</small>';
+}
+
+/* ---- Actions ---- */
+function renderActions(){
+  for(const role of ['rldc','coal','bess']){
+    const container = document.querySelector(`.role-actions[data-actions="${role}"]`);
+    container.innerHTML = ACTIONS[role].map(a => {
+      const spent = sim && sim.spentActions.has(role+':'+a.id);
+      const active = sim && sim.activeActions.find(x => x.role === role && x.action.id === a.id && x.phase !== 'done');
+      let statusHtml = '';
+      let progW = 0;
+      if(active){
+        if(active.phase === 'delay'){
+          const p = active.elapsed / active.action.delay;
+          progW = p * 100;
+          statusHtml = `<div class="action-status">Delay · ${(active.action.delay - active.elapsed).toFixed(0)} s to effect</div>`;
+        } else if(active.phase === 'ramp'){
+          const p = active.delivered / (active.action.targetMW || 1);
+          progW = 100;
+          statusHtml = `<div class="action-status">Ramping · ${active.delivered.toFixed(0)} / ${active.action.targetMW.toFixed(0)} MW</div>`;
+        } else if(active.phase === 'hold'){
+          progW = 100;
+          if(active.action.mode === 'inertia'){
+            statusHtml = `<div class="action-status">Active · ${(active.action.duration - active.elapsed).toFixed(0)} s left · +${active.action.inertiaBoost} s H</div>`;
+          } else if(active.action.mode === 'load'){
+            statusHtml = `<div class="action-status">Load shed active</div>`;
+          } else {
+            statusHtml = `<div class="action-status">Delivering ${active.delivered.toFixed(0)} MW</div>`;
+          }
+        }
+      } else if(spent){
+        statusHtml = `<div class="action-status">Completed</div>`;
+      }
+      return `
+        <button class="action ${active?'active':''} ${spent?'spent':''}" data-role="${role}" data-id="${a.id}" ${spent||!sim||!sim.running?'disabled':''}>
+          <div class="action-name">${a.name}<span class="cost">${a.cost}</span></div>
+          <div class="action-hint">${a.hint}</div>
+          ${statusHtml}
+          <div class="action-progress" style="width:${progW}%"></div>
+        </button>
+      `;
+    }).join('');
+  }
+  // Wire up
+  document.querySelectorAll('.action').forEach(btn => {
+    btn.onclick = () => {
+      const role = btn.dataset.role, id = btn.dataset.id;
+      activateAction(role, id);
+    };
+  });
+}
+
+/* ---- Log ---- */
+function addLog(kind, msg){
+  const list = document.getElementById('logList');
+  const t = sim ? sim.t : 0;
+  const mm = String(Math.floor(t/60)).padStart(2,'0');
+  const ss = String(Math.floor(t%60)).padStart(2,'0');
+  const iconMap = { event:'fa-triangle-exclamation', action:'fa-hand-pointer', auto:'fa-robot', info:'fa-info' };
+  const item = document.createElement('div');
+  item.className = 'log-item ' + kind;
+  item.innerHTML = `
+    <div class="log-time">${mm}:${ss}</div>
+    <div class="log-icon"><i class="fas ${iconMap[kind]||'fa-info'}"></i></div>
+    <div class="log-body">${msg}</div>
+  `;
+  // Prepend so latest is at top
+  if(list.firstChild) list.insertBefore(item, list.firstChild);
+  else list.appendChild(item);
+  // Trim
+  while(list.children.length > 30) list.removeChild(list.lastChild);
+}
+
+/* ---- Score ---- */
+function drawScore(){
+  if(!sim) return;
+  // Score = 100 * (time in band / total time after contingency) - penalties
+  const scen = SCENARIOS[sim.scenario];
+  const tPostContingency = Math.max(0.1, sim.t - scen.contingency.at);
+  const tPre = Math.min(sim.t, scen.contingency.at);
+  const tibPost = Math.max(0, sim.timeInBand - tPre);
+  const tibPct = 100 * tibPost / tPostContingency;
+  const uflsCount = sim.uflsFired.size;
+  let score = tibPct;
+  score -= uflsCount * 15;
+  if(sim.worstNadir < 48.5) score -= 30;
+  score = Math.max(0, Math.min(100, score));
+
+  const sv = document.getElementById('scoreVal');
+  sv.textContent = score.toFixed(0);
+  sv.className = 'score-val ' + (score > 75 ? 'gr' : score > 50 ? 'em' : 'bd');
+
+  document.getElementById('scTIB').textContent = tibPct.toFixed(1) + '%';
+  document.getElementById('scNadir').textContent = sim.worstNadir.toFixed(3) + ' Hz';
+  document.getElementById('scUFLS').textContent = uflsCount;
+  document.getElementById('scTime').textContent = Math.floor(sim.t) + ' s';
+
+  return score;
+}
+
+/* ---- End scenario / debrief ---- */
+function endScenario(kind){
+  const score = drawScore();
+  document.getElementById('playLabel').textContent = 'Start';
+  document.getElementById('playBtn').classList.remove('running');
+  document.getElementById('playBtn').querySelector('i').className = 'fas fa-play';
+  showDebrief(kind, score);
+}
+
+function showDebrief(kind, score){
+  const scen = SCENARIOS[sim.scenario];
+  const nadir = sim.worstNadir.toFixed(3);
+  const uflsCount = sim.uflsFired.size;
+  const tibPct = (100 * Math.max(0, sim.timeInBand - Math.min(sim.t, scen.contingency.at)) / Math.max(0.1, sim.t - scen.contingency.at)).toFixed(1);
+
+  let title = 'Scenario <em>complete</em>.';
+  let lede = '';
+  let verdict = '';
+
+  if(kind === 'collapsed'){
+    title = 'Grid <em>collapsed</em>.';
+    lede = `Frequency exited the 47.5–51.5 Hz protection envelope. In reality, this would trigger cascading generator trips and a wide-area blackout.`;
+    verdict = `The response was too slow for the physics. In a low-inertia grid, the window between contingency and cascade is measured in seconds — SRAS at 30 s delay simply can't get there. BESS FFR and synthetic inertia are the fast tools.`;
+  } else if(kind === 'timeout'){
+    title = 'Scenario <em>timed out</em>.';
+    lede = `The three-minute simulation window expired. Frequency was not brought fully back to the band, but no protection trip occurred.`;
+    verdict = uflsCount > 0
+      ? `You survived, but at the cost of ${uflsCount} UFLS stage${uflsCount>1?'s':''}. In reality, this means household and industrial customers lost power.`
+      : `You held it in a wider band without shedding load — respectable, though restoring the frequency fully typically requires TRAS activation.`;
+  } else {
+    // resolved
+    if(uflsCount === 0 && score > 80){
+      title = 'Grid <em>held</em>.';
+      lede = `Frequency was restored to the statutory band without any UFLS activation. This is the operator's target outcome.`;
+      verdict = `You matched the response to the physics. Fast tools (FFR, spinning reserve) arrested the fall; slower tools (SRAS, ramp) restored the setpoint.`;
+    } else if(uflsCount > 0){
+      title = 'Restored — with <em>load shed</em>.';
+      lede = `The grid recovered, but automatic UFLS fired at ${uflsCount} stage${uflsCount>1?'s':''}, disconnecting a portion of load.`;
+      verdict = `In control room terms, this is a survivable event that still made headlines. Consider whether faster action (FFR, spinning reserve deployed within 10 seconds) would have held the frequency above the 49.4 Hz UFLS threshold.`;
+    } else {
+      title = 'Restored.';
+      lede = `Frequency is back in the statutory band and stable.`;
+      verdict = `Score reflects the depth of the dip and how long you spent outside the band.`;
+    }
+  }
+
+  document.getElementById('debriefTitle').innerHTML = title;
+  document.getElementById('debriefLede').textContent = lede;
+  document.getElementById('debriefVerdict').textContent = verdict;
+  document.getElementById('dbScore').textContent = score.toFixed(0) + ' / 100';
+  document.getElementById('dbTIB').textContent = tibPct + '%';
+  document.getElementById('dbNadir').textContent = nadir + ' Hz';
+  document.getElementById('dbUFLS').textContent = uflsCount + ' stage' + (uflsCount===1?'':'s');
+
+  document.getElementById('debrief').classList.add('show');
+}
+function closeDebrief(){ document.getElementById('debrief').classList.remove('show'); }
+
+/* ============ GAME LOOP ============ */
+let lastFrame = 0;
+function loop(now){
+  requestAnimationFrame(loop);
+  if(!sim || !sim.running){
+    drawDial();
+    return;
+  }
+  const dtReal = Math.min(0.1, (now - lastFrame) / 1000);
+  lastFrame = now;
+  const dtSim = dtReal * SPEED;
+  // Sub-step for numerical stability: max 50ms per integration step
+  const nSub = Math.max(1, Math.ceil(dtSim / 0.05));
+  const dtStep = dtSim / nSub;
+  for(let i = 0; i < nSub; i++) step(dtStep);
+  drawDial();
+  drawChart();
+  drawState();
+  renderActions();
+  drawScore();
+}
+requestAnimationFrame(loop);
+
+/* ============ CONTROLS ============ */
+let currentScen = 0;
+document.querySelectorAll('.scen-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.scen-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentScen = +btn.dataset.scen;
+    resetGame();
+  };
+});
+
+document.getElementById('playBtn').onclick = () => {
+  if(!sim) sim = newSim(currentScen);
+  if(!sim.running){
+    sim.running = true;
+    document.getElementById('playLabel').textContent = 'Running';
+    document.getElementById('playBtn').classList.add('running');
+    document.getElementById('playBtn').querySelector('i').className = 'fas fa-pause';
+    addLog('info', `Scenario started: <b>${SCENARIOS[currentScen].name}</b>. ${SCENARIOS[currentScen].briefing}`);
+    lastFrame = performance.now();
+  } else {
+    sim.running = false;
+    document.getElementById('playLabel').textContent = 'Resume';
+    document.getElementById('playBtn').classList.remove('running');
+    document.getElementById('playBtn').querySelector('i').className = 'fas fa-play';
+  }
+};
+
+document.getElementById('resetBtn').onclick = () => resetGame();
+
+function resetGame(){
+  sim = newSim(currentScen);
+  document.getElementById('playLabel').textContent = 'Start';
+  document.getElementById('playBtn').classList.remove('running');
+  document.getElementById('playBtn').querySelector('i').className = 'fas fa-play';
+  document.getElementById('logList').innerHTML = '';
+  addLog('info', `Loaded: <b>${SCENARIOS[currentScen].name}</b>. Press Start to run.`);
+  drawDial(); drawChart(); drawState(); renderActions(); drawScore();
+}
+
+/* ============ INIT ============ */
+drawDialStatic();
+drawChartStatic();
+sim = newSim(0);
+drawDial(); drawChart(); drawState(); renderActions(); drawScore();
+</script>
+
 </body>
 </html>
