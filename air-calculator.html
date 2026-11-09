@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Air Exposure Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: sticky tab rail, single column of rounded cards, big numerals up top, maths in expandable sections */
+  color-scheme: light;
+  --bg:#f3f6fa; --card:#ffffff; --ink:#13233d; --muted:#586a84; --line:#dde4ee;
+  --accent:#0e6f8f; --accent-soft:#e2f1f6; --warn-bg:#fff6dd; --warn-line:#e9c860;
+  --c0:#2c9b4e; --c1:#8fc44f; --c2:#e6c200; --c3:#ef8a1c; --c4:#de382e; --c5:#8a1a1a;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:linear-gradient(180deg,#eaf1f7 0,#f3f6fa 320px) var(--bg);background-repeat:no-repeat;background-color:var(--bg);color:var(--ink);font:400 15px/1.55 var(--body);-webkit-text-size-adjust:100%}
+header.top{padding:18px 16px 6px;max-width:980px;margin:0 auto}
+header.top h1{font:700 22px/1.15 var(--display);margin:0;letter-spacing:-.01em}
+header.top p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+nav.tabs{position:sticky;top:0;z-index:5;background:rgba(243,246,250,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.tabs .rail{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;max-width:980px;margin:0 auto;scrollbar-width:none}
+nav.tabs .rail::-webkit-scrollbar{display:none}
+nav.tabs a{flex:0 0 auto;text-decoration:none;color:var(--muted);font-weight:500;font-size:13.5px;padding:7px 12px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+nav.tabs a[aria-current="true"]{background:var(--ink);color:#fff}
+nav.tabs a:not([aria-current="true"]):hover{border-color:var(--line);background:#fff}
+main{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+section.tab{display:none;flex-direction:column;gap:14px}
+section.tab.on{display:flex}
+h2{font:700 20px/1.2 var(--display);margin:4px 0 0;text-wrap:balance}
+h3{font:600 15px/1.3 var(--body);margin:0 0 8px}
+p{margin:0 0 8px} p:last-child{margin-bottom:0}
+.lede{color:var(--muted);max-width:65ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 1px 2px rgba(19,35,61,.04)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid3{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat .k{font-size:12px;color:var(--muted);font-weight:500}
+.stat .v{font:700 24px/1.15 var(--display);font-variant-numeric:tabular-nums;margin-top:2px}
+.stat .v small{font:500 13px var(--body);color:var(--muted)}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+label{font-size:12.5px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+input[type=number],select,input[type=text]{width:100%;font:500 15px var(--body);color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 10px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #7cc4dc;outline-offset:2px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.hero{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+.bigin label{font:700 12px var(--body);letter-spacing:.08em;color:var(--muted)}
+.bigin input{font:700 56px/1 var(--display);padding:6px 12px;border-radius:14px;font-variant-numeric:tabular-nums;height:auto}
+.pill{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;padding:5px 12px 5px 8px;border-radius:999px;border:1.5px solid var(--line);background:#fff}
+.pill i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.sumlist{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sumlist li{display:block}
+.sumlist b{font-variant-numeric:tabular-nums}
+.btn{font:600 14.5px var(--body);border:0;border-radius:12px;padding:11px 16px;background:var(--accent);color:#fff;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--body);padding:6px 11px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:12px;padding:10px 12px;font-size:13.5px}
+.note b{font-weight:600}
+.info{background:var(--accent-soft);border:1px solid #bfdfe9;border-radius:12px;padding:10px 12px;font-size:13.5px}
+details{border:1px solid var(--line);border-radius:12px;background:#fbfcfe}
+details summary{cursor:pointer;padding:10px 12px;font-weight:600;font-size:14px}
+details .in{padding:0 12px 12px}
+.calc{font:500 13.5px/1.7 ui-monospace,Menlo,Consolas,monospace;background:#f1f4f9;border-radius:10px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{display:grid;grid-template-columns:minmax(110px,180px) 1fr auto;gap:10px;align-items:center;margin:8px 0;font-size:13.5px}
+.bar .t{height:16px;background:#edf1f6;border-radius:8px;overflow:hidden}
+.bar .t span{display:block;height:100%;border-radius:8px;min-width:3px}
+.bar .val{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:1.3fr .9fr 1.1fr 70px 34px;gap:6px;align-items:center}
+.row input,.row select{padding:7px 8px;font-size:13.5px}
+.row .x{border:1.5px solid var(--line);background:#fff;border-radius:9px;height:36px;cursor:pointer;color:var(--muted);font-size:16px}
+@media(max-width:560px){.row{grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fbfcfe}.row input[type=text]{grid-column:1/-1}}
+.chartbox{position:relative;height:300px}
+.sw{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--ink);margin:0;cursor:pointer}
+.sw{align-items:flex-start}.sw input{flex:0 0 18px;width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+ul.tight{margin:6px 0 0;padding-left:18px} ul.tight li{margin:3px 0}
+.sys{border-left:4px solid var(--accent);padding-left:12px}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.gauge text{font-family:var(--body)}
+.srcline{font-size:12px;color:var(--muted)}
+a{color:var(--accent)}
+@media(prefers-reduced-motion:no-preference){.bar .t span{transition:width .35s ease}#needle{transition:transform .5s cubic-bezier(.3,1.3,.5,1)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Air Exposure Calculator</h1>
+  <p>Turn an AQI number into what is in the air, how much you breathe in, and what to do about it. India CPCB scale.</p>
+</header>
+<nav class="tabs" aria-label="Sections"><div class="rail" id="rail"></div></nav>
+<main>
+
+<!-- HOME -->
+<section class="tab" id="t-home">
+  <div class="card hero">
+    <div>
+      <div class="bigin"><label for="aqiHome">ENTER YOUR AQI</label>
+      <input id="aqiHome" type="number" inputmode="numeric" min="0" max="500" data-bind="aqi" placeholder="350"></div>
+      <div style="margin-top:12px"><span class="pill" id="h-pill"></span></div>
+      <ul class="sumlist" id="h-sum"></ul>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="#exposure" style="text-decoration:none">Calculate my exposure</a>
+        <a class="btn ghost" href="#pm25" style="text-decoration:none">I know my PM2.5</a>
+      </div>
+    </div>
+    <div id="gauge" class="gauge" aria-hidden="true"></div>
+  </div>
+  <div id="h-src" class="info"></div>
+  <div class="grid3" id="h-stats"></div>
+  <div class="card"><h3>What to do at this level</h3><div id="h-actions"></div>
+    <p class="small muted" style="margin-top:8px">Set your age group and health conditions in <a href="#health">Health by Age</a> for tailored precautions.</p></div>
+  <div class="card"><h3>Share this result</h3>
+    <p class="muted small">Copies a plain-text report with your inputs, results, assumptions and sources.</p>
+    <button class="btn ghost" id="copyBtn" type="button">Copy report</button>
+    <span id="copyMsg" class="small muted" role="status"></span>
+    <textarea id="copyOut" hidden rows="10" style="width:100%;margin-top:8px;font:13px ui-monospace,monospace;border:1.5px solid var(--line);border-radius:10px;padding:8px" aria-label="Report text"></textarea>
+  </div>
+</section>
+
+<!-- AQI CONVERTER -->
+<section class="tab" id="t-aqi">
+  <h2>AQI Converter</h2>
+  <p class="lede">AQI is an index, not a weight of pollution. Each pollutant gets its own sub-index and the highest one becomes the AQI. So an AQI alone gives a conditional estimate of PM2.5.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label for="aqiConv">Overall AQI (0–500)</label><input id="aqiConv" type="number" inputmode="numeric" min="0" max="500" data-bind="aqi"></div>
+      <div><span class="pill" id="a-pill"></span><div class="stat" style="margin-top:8px"><div class="k">Conditional PM2.5 estimate</div><div class="v" id="a-pm"></div><div class="s" id="a-pms"></div></div></div>
+    </div>
+    <div class="note" style="margin-top:12px" id="a-warn"></div>
+    <details style="margin-top:12px" open><summary>Formula and calculation</summary><div class="in"><div class="calc" id="a-calc"></div>
+      <p class="small muted" style="margin-top:8px">I<sub>L</sub>, I<sub>H</sub> are the AQI band limits. B<sub>L</sub>, B<sub>H</sub> are the PM2.5 limits (µg/m³, 24-hour average) for that band.</p></div></details>
+    <details style="margin-top:8px"><summary>CPCB breakpoint table (all eight pollutants)</summary><div class="in tw" id="a-bp"></div></details>
+  </div>
+  <div class="card">
+    <h3>Have pollutant readings? Calculate the AQI yourself</h3>
+    <p class="muted small">Enter 24-hour averages (8-hour for CO and O₃). CPCB needs at least three pollutants, one of them PM2.5 or PM10. Units are µg/m³ except CO in mg/m³.</p>
+    <div class="grid3" id="polIn"></div>
+    <div id="polOut" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<!-- PM2.5 -->
+<section class="tab" id="t-pm25">
+  <h2>PM2.5 Calculator</h2>
+  <p class="lede">A measured PM2.5 value is better than an estimate from AQI. Enter it here and every tab will use it.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label for="pmIn">Measured PM2.5 (µg/m³)</label><input id="pmIn" type="number" inputmode="decimal" min="0" step="0.1" data-bind="pm" placeholder="e.g. 185">
+        <button class="btn ghost sm" type="button" id="pmClear" style="margin-top:8px">Clear and use AQI instead</button></div>
+      <div class="stat"><div class="k">PM2.5 sub-index (CPCB)</div><div class="v" id="p-si"></div><div class="s" id="p-cat"></div></div>
+    </div>
+    <div id="p-src" class="info" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <h3>How much is in one cubic metre of air?</h3>
+    <div class="hero">
+      <div id="cube" aria-hidden="true"></div>
+      <div>
+        <div class="grid3"><div class="stat"><div class="k">Micrograms</div><div class="v" id="p-ug"></div></div><div class="stat"><div class="k">Milligrams</div><div class="v" id="p-mg"></div></div></div>
+        <div class="calc" id="p-conv" style="margin-top:10px"></div>
+        <p class="small muted" style="margin-top:8px" id="p-salt"></p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Compare two places</h3>
+    <div class="grid">
+      <div><label for="c1n">Place A</label><input id="c1n" type="text" value="Delhi"><label for="c1a" style="margin-top:6px">AQI</label><input id="c1a" type="number" min="0" max="500" value="350"></div>
+      <div><label for="c2n">Place B</label><input id="c2n" type="text" value="Jaipur"><label for="c2a" style="margin-top:6px">AQI</label><input id="c2a" type="number" min="0" max="500" value="150"></div>
+    </div>
+    <div id="cmpOut" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- EXPOSURE -->
+<section class="tab" id="t-exposure">
+  <h2>Human Exposure</h2>
+  <p class="lede">Inhaled mass = concentration × breathing rate × time. The harder you breathe and the longer you stay, the more you take in.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label for="ageSel">Age group</label><select id="ageSel" data-bind="age"></select></div>
+      <div><label for="actSel">Activity</label><select id="actSel" data-bind="act"></select></div>
+      <div><label for="hrs">Duration (hours)</label><input id="hrs" type="number" inputmode="decimal" min="0" max="24" step="0.25" data-bind="hours"></div>
+    </div>
+    <div class="chips" id="durChips" style="margin-top:10px" role="group" aria-label="Duration presets"></div>
+    <details style="margin-top:12px"><summary>Advanced: set your own breathing rate</summary><div class="in">
+      <label for="irIn">Breathing rate (m³/hour). Leave blank to use the reference value.</label>
+      <input id="irIn" type="number" inputmode="decimal" min="0" step="0.05" data-bind="ir" placeholder="reference value">
+      <p class="small muted" style="margin-top:6px">Reference values are population means from the US EPA Exposure Factors Handbook (2011), Table 6-2. Your own rate depends on body size, fitness and effort.</p></div></details>
+  </div>
+  <div class="grid3" id="e-stats"></div>
+  <div class="card"><h3>Step by step</h3><div class="calc" id="e-calc"></div><div id="e-warn"></div>
+    <p class="small muted" style="margin-top:8px">This is the mass that enters the nose and mouth. Part of it is breathed out again. It is not a measure of harm.</p></div>
+  <div class="card"><h3>What if…</h3><div class="tw" id="whatif"></div></div>
+</section>
+
+<!-- ACTIVITY -->
+<section class="tab" id="t-activity">
+  <h2>Activity Simulator</h2>
+  <p class="lede">Same air, same time, different effort. Breathing rate alone can change the inhaled mass more than tenfold.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label for="ageSel2">Age group</label><select id="ageSel2" data-bind="age"></select></div>
+      <div><label for="hrs2">Duration (hours)</label><input id="hrs2" type="number" min="0" max="24" step="0.25" data-bind="hours"></div>
+    </div>
+    <p class="small muted" style="margin-top:10px" id="act-cap"></p>
+    <div class="chartbox"><canvas id="actChart" role="img" aria-label="Bar chart of inhaled PM2.5 by activity"></canvas></div>
+    <div class="tw" id="actTable" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- DAY -->
+<section class="tab" id="t-day">
+  <h2>Indoor vs Outdoor</h2>
+  <p class="lede">Build your day. Each block has its own place, effort and duration, and the blocks add up.</p>
+  <div class="card">
+    <h3>Indoor air</h3>
+    <div class="grid">
+      <div><label for="indIn">Indoor PM2.5 if you have measured it (µg/m³)</label><input id="indIn" type="number" min="0" step="0.1" data-bind="indoor" placeholder="unknown"></div>
+      <div><label for="ratio">Assumed indoor/outdoor ratio: <b id="ratioV"></b></label><input id="ratio" type="range" min="0.1" max="1.2" step="0.05" data-bind="ratio">
+        <div class="chips" style="margin-top:6px"><button class="chip" type="button" data-ratio="0.9">Windows open ≈ 0.9</button><button class="chip" type="button" data-ratio="0.6">Windows closed ≈ 0.6</button></div></div>
+    </div>
+    <label class="sw" style="margin-top:10px"><input type="checkbox" id="purOn" data-bind="purOn"> <span>Air purifier running indoors (strength set in <a href="#protection">Protection</a>)</span></label>
+    <div class="note" style="margin-top:10px" id="d-ass"></div>
+  </div>
+  <div class="card">
+    <h3>Your day</h3>
+    <div class="rows" id="rows"></div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost sm" type="button" id="addRow">Add block</button><button class="btn ghost sm" type="button" id="resetRows">Reset example day</button><span class="small muted" id="d-hours"></span></div>
+  </div>
+  <div class="grid3" id="d-stats"></div>
+  <div class="card"><h3>How the day adds up</h3><div class="chartbox"><canvas id="dayChart" role="img" aria-label="Line chart of cumulative inhaled PM2.5 through the day"></canvas></div>
+    <div class="tw" id="d-table" style="margin-top:10px"></div></div>
+</section>
+
+<!-- WHO -->
+<section class="tab" id="t-who">
+  <h2>WHO Comparison</h2>
+  <p class="lede">The WHO 2021 guidelines are health-based reference levels. Each one belongs to a specific averaging period.</p>
+  <div class="card"><h3>Short term: against 24-hour levels</h3><div id="w-day"></div><p id="w-dayTxt" style="margin-top:8px"></p></div>
+  <div class="card"><h3>Long term: if this level lasted a whole year</h3><div id="w-year"></div><p id="w-yearTxt" style="margin-top:8px"></p></div>
+  <div class="note"><b>Read this as a reference, not a safe/unsafe verdict.</b> The WHO 24-hour level is a 24-hour mean that may be exceeded on 3–4 days a year (99th percentile). A reading taken at one moment, or a PM2.5 value inferred from AQI, is not the same quantity. CPCB's AQI uses 24-hour averages, so the comparison is closest when your number is a 24-hour figure. WHO found no threshold below which PM2.5 is harmless, so lower is better at every level.</div>
+  <details><summary>WHO 2021 guideline levels used</summary><div class="in tw"><table><tr><th>Pollutant</th><th>Averaging</th><th class="n">WHO guideline</th><th class="n">Interim target 1</th><th class="n">India NAAQS</th></tr>
+  <tr><td>PM2.5</td><td>24-hour</td><td class="n">15 µg/m³</td><td class="n">75</td><td class="n">60</td></tr><tr><td>PM2.5</td><td>Annual</td><td class="n">5 µg/m³</td><td class="n">35</td><td class="n">40</td></tr>
+  <tr><td>PM10</td><td>24-hour</td><td class="n">45 µg/m³</td><td class="n">150</td><td class="n">100</td></tr><tr><td>PM10</td><td>Annual</td><td class="n">15 µg/m³</td><td class="n">70</td><td class="n">60</td></tr></table></div></details>
+</section>
+
+<!-- HEALTH -->
+<section class="tab" id="t-health">
+  <h2>Health by Age</h2>
+  <p class="lede">Educational precautions for your age group and conditions. No damage scores: no valid formula turns age, AQI and hours into a percentage of harm for one person.</p>
+  <div class="card">
+    <label>Age group</label><div class="chips" id="ageChips" role="group" aria-label="Age group"></div>
+    <label style="margin-top:12px">Applies to me</label><div class="chips" id="vulnChips" role="group" aria-label="Health conditions"></div>
+  </div>
+  <div class="card" id="hl-out"></div>
+  <h2 style="margin-top:8px">What does this pollution mean for your body?</h2>
+  <div class="card sys"><h3>Lungs and airways</h3><p>Fine particles irritate the lining of the airways. On polluted days people report coughing, wheezing, a tight chest and shortness of breath, and asthma attacks become more frequent. Lung function can dip for hours to days. Years of exposure are linked with slower lung growth in children, chronic bronchitis, COPD and lung cancer.</p></div>
+  <div class="card sys"><h3>Heart and blood vessels</h3><p>The smallest particles and the inflammation they trigger rea
