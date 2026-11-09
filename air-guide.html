@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guide to the Air Calculator — WiseWatt</title>
+<meta name="description" content="A plain-language guide to the WiseWatt air calculator: what each tab shows, what each number means, the maths, the assumptions and the sources." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+<style>
+:root{
+  /* WiseWatt tokens. Layout: one reading column, numbered sections, tables for anything with numbers, print-ready */
+  color-scheme:dark;
+  --bg:#0B0D10; --bg-soft:#11141A; --surface:#161A21;
+  --line:#262C36; --line-soft:#1C2129;
+  --ink:#F2EBD9; --ink-mute:#9A9485; --ink-dim:#5F5B52;
+  --ember:#E0A458; --electric:#6BCEEB; --grid:#5DAE7B; --red:#D86B5C;
+  --c0:#5DAE7B; --c1:#A6C76A; --c2:#E6C84F; --c3:#E8893A; --c4:#D8503F; --c5:#A3283A;
+  --font-display:'Fraunces',ui-serif,Georgia,serif;
+  --font-sans:'Geist',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --maxw:860px; --ease:cubic-bezier(.2,.7,.2,1);
+}
+body.light{
+  color-scheme:light;
+  --bg:#F2EBD9;--bg-soft:#EDE4CD;--surface:#E6DCC1;
+  --line:#C9BFA4;--line-soft:#D7CDB2;
+  --ink:#1A1814;--ink-mute:#5C574B;--ink-dim:#8A8472;
+  --ember:#B3741F; --electric:#1F7F9E; --grid:#3F8A5B; --c2:#C9A400;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--ink);font-feature-settings:"ss01","cv11";font-size:16px;line-height:1.65;overflow-x:hidden;transition:background .5s var(--ease),color .5s var(--ease);-webkit-text-size-adjust:100%}
+a{color:inherit;text-decoration:none}
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in oklab,var(--bg) 70%,transparent);border-bottom:1px solid transparent;transition:border-color .3s}
+.nav.scrolled{border-bottom-color:var(--line-soft)}
+.nav-inner{max-width:1080px;margin:0 auto;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brand{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);font-weight:500;font-size:1.3rem;letter-spacing:-.01em}
+.brand-mark{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#F2B968,#E0A458,#C4823F);box-shadow:0 0 0 1px var(--line),0 0 24px -2px var(--ember);position:relative;flex:0 0 28px}
+.brand-mark::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px var(--ember)}
+.brand em{font-style:italic;font-weight:400;color:var(--ink-mute)}
+.nav-back{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-mute);margin-left:auto}
+.nav-back:hover{color:var(--ember)}
+.theme-btn{background:none;border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:50%;cursor:pointer;display:grid;place-items:center;transition:all .2s;flex:0 0 34px}
+.theme-btn:hover{border-color:var(--ember);color:var(--ember)}
+@media(max-width:520px){.nav-back .lh{display:none}}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.5rem}
+header.hero{padding-top:7rem;padding-bottom:2.5rem;border-bottom:1px solid var(--line-soft)}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;color:var(--ember);margin-bottom:1.1rem;display:flex;align-items:center;gap:.8rem}
+.eyebrow::before{content:"";width:24px;height:1px;background:currentColor;flex:0 0 24px}
+h1{font-family:var(--font-display);font-variation-settings:"opsz" 144;font-weight:350;font-size:clamp(2.2rem,6vw,3.8rem);line-height:1.02;letter-spacing:-.03em;max-width:17ch;margin-bottom:1.2rem;text-wrap:balance}
+h1 em,h2 em{font-style:italic;color:var(--ember);font-weight:300}
+.lede{font-size:1.12rem;color:var(--ink-mute);max-width:62ch}
+.lede strong,p strong,li strong{color:var(--ink);font-weight:500}
+.meta{margin-top:1.6rem;display:flex;gap:.7rem;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:.5rem;font:500 .9rem var(--font-sans);padding:.7rem 1.15rem;border-radius:100px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;transition:all .25s var(--ease)}
+.btn:hover{border-color:var(--ember);color:var(--ember)}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-primary:hover{background:var(--ember);border-color:var(--ember);color:#1A1814}
+.stamp{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-top:1.4rem}
+
+.toc{margin:2.2rem 0 0;display:grid;grid-template-columns:1fr 1fr;gap:.2rem 2rem;font-family:var(--font-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute)}
+.toc a{padding:.35rem 0;border-bottom:1px solid var(--line-soft);display:flex;gap:.7rem}
+.toc a span{color:var(--ink-dim)} .toc a:hover{color:var(--ember)}
+@media(max-width:600px){.toc{grid-template-columns:1fr}}
+
+section{padding:3rem 0 0}
+section>.eyebrow{margin-bottom:.9rem}
+h2{font-family:var(--font-display);font-variation-settings:"opsz" 144;font-weight:350;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.08;letter-spacing:-.025em;margin-bottom:1.1rem;text-wrap:balance}
+h3{font-family:var(--font-display);font-variation-settings:"opsz" 144;font-weight:400;font-size:1.3rem;line-height:1.2;letter-spacing:-.01em;margin:0 0 .5rem}
+p{color:var(--ink-mute);margin-bottom:.9rem;max-width:68ch}
+ul{color:var(--ink-mute);padding-left:1.15rem;margin-bottom:.9rem;max-width:68ch} li{margin:.3rem 0}
+section a,.foot a{color:var(--ember);border-bottom:1px solid color-mix(in oklab,var(--ember) 40%,transparent)}
+
+.tabcard{border:1px solid var(--line-soft);border-radius:16px;background:var(--bg-soft);padding:1.4rem 1.5rem;margin-bottom:1rem;break-inside:avoid}
+.tabcard .num{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:.6rem;display:flex;justify-content:space-between;gap:1rem}
+.tabcard .num b{color:var(--ember);font-weight:500}
+.tabcard dl{display:grid;grid-template-columns:8.2rem 1fr;gap:.45rem 1rem;margin-top:.8rem}
+.tabcard dt{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);padding-top:.3rem}
+.tabcard dd{color:var(--ink-mute);font-size:.95rem}
+.tabcard dd b{color:var(--ink);font-weight:500}
+@media(max-width:560px){.tabcard dl{grid-template-columns:1fr;gap:.1rem}.tabcard dd{margin-bottom:.5rem}.tabcard{padding:1.1rem}}
+
+.fx{font:400 .9rem/1.85 var(--font-mono);background:var(--bg-soft);border:1px solid var(--line-soft);border-left:2px solid var(--ember);border-radius:10px;padding:.9rem 1.1rem;overflow-x:auto;white-space:pre;color:var(--ink-mute);margin:0 0 1rem;break-inside:avoid}
+.fx b{color:var(--ink);font-weight:500} .fx i{font-style:normal;color:var(--ember)}
+.tw{overflow-x:auto;margin-bottom:1rem;border:1px solid var(--line-soft);border-radius:12px;break-inside:avoid}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--line-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);font-weight:500;background:var(--bg-soft)}
+td{color:var(--ink-mute)} td b{color:var(--ink);font-weight:500}
+td.n,th.n{text-align:right;font-family:var(--font-mono);font-size:.82rem;white-space:nowrap}
+td.n{color:var(--ink)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:.45rem}
+.callout{border:1px solid color-mix(in oklab,var(--ember) 35%,transparent);background:color-mix(in oklab,var(--ember) 9%,transparent);border-radius:12px;padding:.95rem 1.1rem;margin-bottom:1rem;break-inside:avoid}
+.callout p{margin:0;font-size:.95rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.two>div{border:1px solid var(--line-soft);border-radius:14px;padding:1.1rem 1.2rem;background:var(--bg-soft);break-inside:avoid}
+.two h3{font-size:1.1rem}
+.two ul{margin:0;font-size:.93rem}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.foot{margin-top:3.5rem;padding:2rem 0 3rem;border-top:1px solid var(--line-soft);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+@media(max-width:600px){.wrap{padding:0 1.2rem}header.hero{padding-top:5.8rem}}
+
+/* PRINT / PDF: cream paper, dark ink, no chrome */
+@page{size:A4;margin:16mm 15mm}
+@media print{
+  :root,body,body.light{color-scheme:light;--bg:#fff;--bg-soft:#F7F3E8;--surface:#EFE8D6;--line:#CFC6AE;--line-soft:#DDD5BF;--ink:#1A1814;--ink-mute:#3F3B33;--ink-dim:#6F6A5C;--ember:#9A5F12;--electric:#1F7F9E;--c2:#C9A400}
+  body{font-size:10.5pt;line-height:1.5;background:#fff}
+  .nav,.meta,.theme-btn{display:none!important}
+  header.hero{padding-top:0;padding-bottom:1.2rem}
+  h1{font-size:30pt} h2{font-size:18pt;break-after:avoid} h3{break-after:avoid}
+  section{padding-top:1.6rem} .wrap{max-width:none;padding:0}
+  .toc{margin-top:1.2rem} p,ul{max-width:none}
+  .tw,.fx{overflow:visible} .fx{white-space:pre-wrap;font-size:9pt} table{font-size:9pt}
+  #s3,#s5{break-before:page;padding-top:0}
+  h2+p,h3+p,h3+.fx,h2+.tw,h2+ul{break-before:avoid}
+  .eyebrow{break-after:avoid}
+  section a,.foot a{border:0}
+  .foot{margin-top:1.6rem;padding-bottom:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand"><span class="brand-mark"></span><span>WiseWatt<em>&nbsp;/&nbsp;air</em></span></a>
+    <a href="air-calculator.html" class="nav-back"><i class="fas fa-arrow-left"></i> Back<span class="lh">&nbsp;to the calculator</span></a>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme"><i class="fas fa-circle-half-stroke"></i></button>
+  </div>
+</nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Reader's guide · Tool 09</div>
+  <h1>How to read the <em>air calculator.</em></h1>
+  <p class="lede">The calculator takes one number, an AQI, and answers three plain questions: <strong>what is in the air, how much of it do I breathe in, and what should I do?</strong> This guide explains every tab and every number, the maths behind them, what was assumed and where the figures come from.</p>
+  <div class="meta">
+    <a class="btn btn-primary" href="air-calculator.html">Open the calculator →</a>
+    <a class="btn" href="air-guide.pdf">Download as PDF</a>
+  </div>
+  <div class="stamp">WiseWatt · wisewatt.in/air-calculator.html · India CPCB scale · Educational, not medical advice</div>
+  <div class="toc">
+    <a href="#s1"><span>01</span>The idea in one minute</a>
+    <a href="#s2"><span>02</span>Three numbers to know</a>
+    <a href="#s3"><span>03</span>Tab by tab</a>
+    <a href="#s4"><span>04</span>The maths in one place</a>
+    <a href="#s5"><span>05</span>Assumptions</a>
+    <a href="#s6"><span>06</span>Precautions built in</a>
+    <a href="#s7"><span>07</span>Limits</a>
+    <a href="#s8"><span>08</span>Sources and glossary</a>
+  </div>
+</div></header>
+
+<main class="wrap">
+
+<section id="s1">
+  <div class="eyebrow">01 · The idea in one minute</div>
+  <h2>An AQI is a grade, <em>not a weight.</em></h2>
+  <p>AQI 350 tells you the air is in the "Very Poor" band. It does not tell you how much pollution you actually take into your body. That depends on three things: <strong>how dirty the air is, how hard you are breathing and for how long.</strong></p>
+  <div class="fx"><b>Inhaled PM2.5  =  Concentration  ×  Breathing rate  ×  Time</b>
+      (µg)             (µg per m³)      (m³ per hour)    (hours)</div>
+  <p>One worked example runs through this guide. Enter <strong>AQI 350</strong> and the calculator says:</p>
+  <div class="tw"><table>
+    <tr><th>Step</th><th>Result</th><th>In plain words</th></tr>
+    <tr><td>AQI → PM2.5</td><td class="n">185 µg/m³</td><td>Each cubic metre of air holds about 185 micrograms of fine particles, if PM2.5 is what set the AQI.</td></tr>
+    <tr><td>Sitting for 8 hours</td><td class="n">373 µg</td><td>A resting adult breathes about 2 m³ of air in that time.</td></tr>
+    <tr><td>Running for 1 hour</td><td class="n">555 µg</td><td>One hour of running takes in more than eight hours of sitting.</td></tr>
+    <tr><td>Against WHO</td><td class="n">12.3×</td><td>About twelve times the WHO 24-hour reference level of 15 µg/m³.</td></tr>
+  </table></div>
+</section>
+
+<section id="s2">
+  <div class="eyebrow">02 · Three numbers to know</div>
+  <h2>What each kind of number <em>means.</em></h2>
+  <div class="tw"><table>
+    <tr><th>Number</th><th>Unit</th><th>What it tells you</th><th>What it does not tell you</th></tr>
+    <tr><td><b>AQI</b></td><td>0 to 500, no unit</td><td>How bad the worst pollutant is today, as a grade in six bands.</td><td>Which pollutant it is, or any weight of pollution.</td></tr>
+    <tr><td><b>PM2.5 concentration</b></td><td>µg/m³</td><td>The weight of fine particles in one cubic metre of air.</td><td>How much you personally inhale.</td></tr>
+    <tr><td><b>Inhaled mass</b></td><td>µg or mg</td><td>The weight of fine particles that entered your nose and mouth over a period.</td><td>How much stayed in your lungs, or any measure of harm.</td></tr>
+  </table></div>
+  <p>The six CPCB bands, with the colours used in the calculator. Every colour is always shown with its name.</p>
+  <div class="tw"><table>
+    <tr><th>Band</th><th class="n">AQI</th><th class="n">PM2.5 (µg/m³)</th><th>CPCB health statement, in short</th></tr>
+    <tr><td><span class="dot" style="background:var(--c0)"></span>Good</td><td class="n">0–50</td><td class="n">0–30</td><td>Minimal impact.</td></tr>
+    <tr><td><span class="dot" style="background:var(--c1)"></span>Satisfactory</td><td class="n">51–100</td><td class="n">31–60</td><td>Minor breathing discomfort for sensitive people.</td></tr>
+    <tr><td><span class="dot" style="background:var(--c2)"></span>Moderate</td><td class="n">101–200</td><td class="n">61–90</td><td>Discomfort for people with lung, asthma or heart conditions.</td></tr>
+    <tr><td><span class="dot" style="background:var(--c3)"></span>Poor</td><td class="n">201–300</td><td class="n">91–120</td><td>Discomfort for most people on prolonged exposure.</td></tr>
+    <tr><td><span class="dot" style="background:var(--c4)"></span>Very Poor</td><td class="n">301–400</td><td class="n">121–250</td><td>Respiratory illness on prolonged exposure.</td></tr>
+    <tr><td><span class="dot" style="background:var(--c5)"></span>Severe</td><td class="n">401–500</td><td class="n">above 250</td><td>Affects healthy people; serious impact on those with existing disease.</td></tr>
+  </table></div>
+</section>
+
+<section id="s3">
+  <div class="eyebrow">03 · Tab by tab</div>
+  <h2>What each tab <em>shows you.</em></h2>
+  <p>All ten tabs share the same inputs. Change the AQI, your age group or your activity in one place and every tab updates.</p>
+
+  <div class="tabcard"><div class="num"><span>Tab 1</span><b>Home</b></div><h3>The answer at a glance</h3>
+    <dl><dt>You enter</dt><dd>An AQI between 0 and 500.</dd>
+    <dt>You see</dt><dd>The band, the PM2.5 estimate in µg and mg, the WHO multiple, the inhaled mass for your chosen activity, and what to do at this level.</dd>
+    <dt>How to read it</dt><dd>The dial shows where your number sits on the six bands. <b>Copy report</b> gives a text summary you can paste into a message.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 2</span><b>AQI Converter</b></div><h3>From an index back to a concentration</h3>
+    <dl><dt>You enter</dt><dd>An overall AQI. Or, lower down, your own readings for up to eight pollutants.</dd>
+    <dt>You see</dt><dd>The PM2.5 estimate, the formula with your numbers filled in, and the full CPCB breakpoint table.</dd>
+    <dt>How to read it</dt><dd>The PM2.5 figure is <b>conditional</b>. It is right if PM2.5 is the pollutant that set the AQI. If PM10 or a gas set it, real PM2.5 is lower. So treat it as an upper estimate.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 3</span><b>PM2.5 Calculator</b></div><h3>Use a real reading if you have one</h3>
+    <dl><dt>You enter</dt><dd>A measured PM2.5 value in µg/m³, from a monitor or an official station.</dd>
+    <dt>You see</dt><dd>Its CPCB sub-index and band, the same value in mg/m³, and a one-cubic-metre box of air with that load in it. You can also compare two places.</dd>
+    <dt>How to read it</dt><dd>Once entered, the whole calculator uses your measured value in place of the AQI estimate. 1 mg = 1,000 µg, so 185 µg/m³ is 0.185 mg/m³.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 4</span><b>Human Exposure</b></div><h3>How much you breathe in</h3>
+    <dl><dt>You enter</dt><dd>Age group, activity and duration. Advanced users can type their own breathing rate.</dd>
+    <dt>You see</dt><dd>Air volume breathed, PM2.5 inhaled in µg and mg, the calculation line by line, and a "what if" table.</dd>
+    <dt>How to read it</dt><dd>This is the mass entering the nose and mouth. Part of it is breathed out again. It is useful for <b>comparing choices</b>, such as running outdoors against resting indoors.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 5</span><b>Activity Simulator</b></div><h3>Same air, different effort</h3>
+    <dl><dt>You enter</dt><dd>Age group and duration.</dd>
+    <dt>You see</dt><dd>A bar chart and table of inhaled mass for nine activities, from sleeping to heavy labour.</dd>
+    <dt>How to read it</dt><dd>For an adult, running moves about <b>twelve times</b> more air than sitting. Effort matters as much as the AQI.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 6</span><b>Indoor vs Outdoor</b></div><h3>Your whole day, block by block</h3>
+    <dl><dt>You enter</dt><dd>Blocks of your day: place (indoors or outdoors), effort and hours. Indoor PM2.5 if you have measured it, or an assumed indoor/outdoor ratio.</dd>
+    <dt>You see</dt><dd>The day's total, the split between indoor and outdoor hours, and a line that climbs through the day.</dd>
+    <dt>How to read it</dt><dd>The example day at AQI 350 totals about <b>1,321 µg</b>: 852 from 21 indoor hours and 468 from 3 outdoor hours. Three hours outside give over a third of the day's load.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 7</span><b>WHO Comparison</b></div><h3>A reference line, not a verdict</h3>
+    <dl><dt>You enter</dt><dd>Nothing new.</dd>
+    <dt>You see</dt><dd>Your PM2.5 beside the WHO 24-hour level (15 µg/m³) and, separately, the WHO annual level (5 µg/m³), with India's standards for context.</dd>
+    <dt>How to read it</dt><dd>The 24-hour level applies to a full-day average. The annual level applies only if air like this lasted a year. WHO found no level below which PM2.5 is harmless, so lower is always better.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 8</span><b>Health by Age</b></div><h3>Precautions for you</h3>
+    <dl><dt>You enter</dt><dd>Age group and any of: asthma, COPD, heart disease, diabetes, pregnancy, other lung condition.</dd>
+    <dt>You see</dt><dd>General advice for the band, a note for your age group, and extra precautions for each condition you selected. Below that, how pollution affects lungs, heart, brain, children and pregnancy.</dd>
+    <dt>How to read it</dt><dd>This is education, not diagnosis. There are no risk percentages here, on purpose.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 9</span><b>Protection Simulator</b></div><h3>Masks and purifiers, as "what if"</h3>
+    <dl><dt>You enter</dt><dd>Whether you wear a well-fitted N95 outdoors and run a purifier indoors, and how much reduction you assume for each.</dd>
+    <dt>You see</dt><dd>Your day with and without protection, split by outdoor and indoor hours.</dd>
+    <dt>How to read it</dt><dd>With an assumed 70% respirator reduction outdoors, the example day falls from 1,321 to about <b>993 µg</b>. The day falls by less than 70% because the mask covers only three hours.</dd></dl></div>
+
+  <div class="tabcard"><div class="num"><span>Tab 10</span><b>Learn the Science</b></div><h3>The background</h3>
+    <dl><dt>You see</dt><dd>How small PM2.5 is next to a human hair, where particles land in the body, how India's AQI is built, why long-term exposure matters, and the full source list.</dd></dl></div>
+</section>
+
+<section id="s4">
+  <div class="eyebrow">04 · The maths in one place</div>
+  <h2>Five formulas, <em>nothing hidden.</em></h2>
+
+  <h3>1. AQI to PM2.5</h3>
+  <p>CPCB draws a straight line between breakpoints. The calculator runs that line backwards.</p>
+  <div class="fx"><b>C = B_low + (AQI − I_low) ÷ (I_high − I_low) × (B_high − B_low)</b>
+
+AQI 350 sits in the 301–400 band, where PM2.5 runs from 120 to 250:
+C = 120 + (350 − 300) ÷ 100 × 130
+<i>C = 185 µg/m³</i></div>
+
+  <h3>2. Micrograms to milligrams</h3>
+  <div class="fx"><b>mg = µg ÷ 1,000</b>
+<i>185 µg/m³ = 0.185 mg/m³</i></div>
+
+  <h3>3. Inhaled mass</h3>
+  <div class="fx"><b>D = C × IR × T</b>
+
+Adult sitting for 8 hours at 185 µg/m³:
+D = 185 × 0.252 × 8
+<i>D = 373 µg = 0.373 mg</i></div>
+
+  <h3>4. A whole day</h3>
+  <div class="fx"><b>Total = D₁ + D₂ + D₃ + …</b>
+Each block of the day has its own C, IR and T.
+
+Indoor C = Outdoor C × indoor/outdoor ratio
+<i>185 × 0.6 = 111 µg/m³</i></div>
+
+  <h3>5. Protection and the WHO multiple</h3>
+  <div class="fx"><b>Adjusted C = C × (1 − assumed reduction)</b>
+
+With an assumed 70% reduction while the mask is on:
+<i>185 × (1 − 0.70) = 55.5 µg/m³</i></div>
+  <div class="fx"><b>WHO multiple = C ÷ guideline</b>
+
+<i>185 ÷ 15 = 12.3</i></div>
+
+  <h3>Breathing rates used (m³ of air per hour)</h3>
+  <p>Mean values from the US EPA Exposure Factors Handbook, Table 6-2, converted from m³ per minute.</p>
+  <div class="tw"><table>
+    <tr><th>Age group</th><th class="n">Sleep</th><th class="n">Sedentary</th><th class="n">Light</th><th class="n">Moderate</th><th class="n">High</th></tr>
+    <tr><td>0–5 years</td><td class="n">0.26</td><td class="n">0.27</td><td class="n">0.66</td><td class="n">1.26</td><td class="n">2.22</td></tr>
+    <tr><td>6–12 years</td><td class="n">0.27</td><td class="n">0.29</td><td class="n">0.66</td><td class="n">1.32</td><td class="n">2.52</td></tr>
+    <tr><td>13–18 years</td><td class="n">0.30</td><td class="n">0.32</td><td class="n">0.78</td><td class="n">1.50</td><td class="n">2.94</td></tr>
+    <tr><td>19–35 years</td><td class="n">0.26</td><td class="n">0.25</td><td class="n">0.72</td><td class="n">1.56</td><td class="n">3.00</td></tr>
+    <tr><td>36–60 years</td><td class="n">0.30</td><td class="n">0.29</td><td class="n">0.78</td><td class="n">1.68</td><td class="n">3.12</td></tr>
+    <tr><td>60+ years</td><td class="n">0.31</td><td class="n">0.29</td><td class="n">0.72</td><td class="n">1.56</td><td class="n">2.82</td></tr>
+  </table></div>
+  <div class="tw"><table>
+    <tr><th>Effort level</th><th>Activities in the calculator</th></tr>
+    <tr><td><b>Sleep</b></td><td>Sleeping</td></tr>
+    <tr><td><b>Sedentary</b></td><td>Sitting, resting</td></tr>
+    <tr><td><b>Light</b></td><td>Normal walking, light exercise</td></tr>
+    <tr><td><b>Moderate</b></td><td>Brisk walking, cycling, moderate exercise</td></tr>
+    <tr><td><b>High</b></td><td>Running, heavy physical labour</td></tr>
+  </table></div>
+</section>
+
+<section id="s5">
+  <div class="eyebrow">05 · Assumptions</div>
+  <h2>What the calculator <em>takes for granted.</em></h2>
+  <ul>
+    <li><strong>PM2.5 set the AQI.</strong> When you enter only an AQI, the PM2.5 figure assumes PM2.5 was the worst pollutant. Otherwise the true value is lower.</li>
+    <li><strong>The AQI is a 24-hour figure.</strong> CPCB's index uses 24-hour averages for particles. A reading at one moment can be higher or lower.</li>
+    <li><strong>Above AQI 400, the line continues.</strong> CPCB gives no upper PM2.5 value for "Severe". The calculator extends the line to 380 µg/m³ at AQI 500 and marks these values as indicative.</li>
+    <li><strong>Breathing rates are population averages</strong> from a US dataset, matched to the nearest age band. Your own rate depends on body size, fitness and effort.</li>
+    <li><strong>Activities share five effort levels.</strong> Brisk walking and cycling, for example, use the same rate.</li>
+    <li><strong>Indoor air is a ratio of outdoor air</strong> unless you enter a measurement. The default is 0.6 with windows closed and 0.9 with them open. Cooking, incense or smoking can push indoor air above outdoor air.</li>
+    <li><strong>Mask and purifier reductions are yours to set.</strong> The starting values (70% and 50%) are illustrations, not measured performance.</li>
+    <li><strong>The mask is worn only outdoors and the purifier runs only indoors.</strong></li>
+  </ul>
+</section>
+
+<section id="s6">
+  <div class="eyebrow">06 · Precautions built in</div>
+  <h2>What the calculator deliberately <em>does not do.</em></h2>
+  <div class="two">
+    <div><h3>It will not invent harm numbers</h3><ul>
+      <li>No percentage of lung damage.</li>
+      <li>No years of life lost.</li>
+      <li>No probability of disease or death.</li>
+      <li>No age-based "damage multiplier".</li></ul></div>
+    <div><h3>It labels what is uncertain</h3><ul>
+      <li>Estimates from AQI are marked "conditional".</li>
+      <li>Ratios and reductions are marked "assumption".</li>
+      <li>WHO levels are shown as a reference, with their averaging period.</li>
+      <li>Health text describes population research, not your diagnosis.</li></ul></div>
+  </div>
+  <div class="callout"><p><strong>Why no harm score?</strong> Inhaled mass can be calculated. The share that stays in the lungs depends on particle size and how each person breathes, so it is left out. Disease risk comes from long-term studies of large populations and cannot be worked out for one person from one AQI reading.</p></div>
+</section>
+
+<section id="s7">
+  <div class="eyebrow">07 · Limits</div>
+  <h2>Where to be <em>careful.</em></h2>
+  <ul>
+    <li>This is an educational tool. It does not replace advice from your doctor.</li>
+    <li>PM2.5 is the only pollutant carried through the exposure tabs. Ozone, nitrogen dioxide and others matter too.</li>
+    <li>Adding up micrograms over days is a fair way to compare routines. It is not a measure of damage stored in the body.</li>
+    <li>The calculator does not fetch live data. You bring the AQI or the PM2.5 reading.</li>
+    <li>Use the results to compare options and to decide when to cut back outdoor effort, not as precise personal doses.</li>
+  </ul>
+</section>
+
+<section id="s8">
+  <div class="eyebrow">08 · Sources and glossary</div>
+  <h2>Where the numbers <em>come from.</em></h2>
+  <div class="tw"><table>
+    <tr><th>Source</th><th>Used for</th></tr>
+    <tr><td><a href="https://cpcbccr.com/ccr_docs/About_AQI.pdf">Central Pollution Control Board, National Air Quality Index</a></td><td>Bands, breakpoints for all eight pollutants, sub-index rule, health statements.</td></tr>
+    <tr><td><a href="https://www.who.int/publications/i/item/9789240034228">WHO Global Air Quality Guidelines, 2021</a></td><td>Guideline levels of 15 µg/m³ (24-hour) and 5 µg/m³ (annual), interim targets.</td></tr>
+    <tr><td><a href="https://www.epa.gov/expobox/exposure-factors-handbook-chapter-6">US EPA Exposure Factors Handbook, Chapter 6, 2011</a></td><td>Breathing rates by age and effort level (Table 6-2).</td></tr>
+    <tr><td><a href="https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health">WHO fact sheet: ambient air quality and health</a></td><td>Summary of health effects.</td></tr>
+    <tr><td>India National Ambient Air Quality Standards, 2009</td><td>PM2.5 standards of 60 µg/m³ (24-hour) and 40 µg/m³ (annual), shown for context.</td></tr>
+  </table></div>
+  <h3>Glossary</h3>
+  <div class="tw"><table>
+    <tr><td><b>AQI</b></td><td>Air Quality Index. A 0–500 grade built from the worst pollutant of the day.</td></tr>
+    <tr><td><b>CPCB</b></td><td>Central Pollution Control Board, the agency that defines India's AQI.</td></tr>
+    <tr><td><b>PM2.5</b></td><td>Particles 2.5 micrometres across or smaller, about 30 times thinner than a hair. Small enough to reach the deep lung.</td></tr>
+    <tr><td><b>PM10</b></td><td>Particles up to 10 micrometres. Includes PM2.5.</td></tr>
+    <tr><td><b>µg/m³</b></td><td>Micrograms per cubic metre of air. A microgram is one millionth of a gram.</td></tr>
+    <tr><td><b>Sub-index</b></td><td>The 0–500 score for one pollutant. The highest sub-index becomes the AQI.</td></tr>
+    <tr><td><b>Breathing rate</b></td><td>Volume of air breathed per hour, in cubic metres. Also called inhalation rate.</td></tr>
+    <tr><td><b>24-hour average</b></td><td>The mean concentration over a full day. Both the AQI and the WHO short-term level use it.</td></tr>
+    <tr><td><b>N95</b></td><td>A respirator that filters at least 95% of test particles in a laboratory. Real protection depends on fit.</td></tr>
+  </table></div>
+</section>
+
+<div class="foot"><span>WiseWatt · Guide to the air calculator</span><span><a href="air-calculator.html">wisewatt.in/air-calculator.html</a></span></div>
+</main>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');try{localStorage.setItem('ww-theme',document.body.classList.contains('light')?'light':'dark')}catch(e){}}
+try{if(localStorage.getItem('ww-theme')==='light')document.body.classList.add('light')}catch(e){}
+const nav=document.getElementById('nav');window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>30));
+</script>
+</body>
+</html>
